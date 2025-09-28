@@ -61,18 +61,7 @@ public class GameDesktopLauncher implements ApplicationListener {
         // get time passed since the last render
         float deltaTime = Gdx.graphics.getDeltaTime();
 
-        if (Gdx.input.isKeyPressed(UP) || Gdx.input.isKeyPressed(W)) {
-            tank.tryGoUp(tree);
-        }
-        if (Gdx.input.isKeyPressed(LEFT) || Gdx.input.isKeyPressed(A)) {
-            tank.tryGoLeft(tree);
-        }
-        if (Gdx.input.isKeyPressed(DOWN) || Gdx.input.isKeyPressed(S)) {
-            tank.tryGoDown(tree);
-        }
-        if (Gdx.input.isKeyPressed(RIGHT) || Gdx.input.isKeyPressed(D)) {
-            tank.tryGoRight(tree);
-        }
+        tank.moveOneTile(tree);
 
         // calculate interpolated player screen coordinates
         tileMovement.moveRectangleBetweenTileCenters(tank.playerRectangle, tank.playerCoordinates, tank.playerDestinationCoordinates, tank.playerMovementProgress);

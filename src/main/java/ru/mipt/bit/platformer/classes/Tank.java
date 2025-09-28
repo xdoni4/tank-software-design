@@ -11,6 +11,8 @@ import static com.badlogic.gdx.math.MathUtils.isEqual;
 import static ru.mipt.bit.platformer.util.GdxGameUtils.*;
 
 import ru.mipt.bit.platformer.classes.Tree;
+import ru.mipt.bit.platformer.classes.Direction;
+import ru.mipt.bit.platformer.classes.ObjectDirection;
 
 import static ru.mipt.bit.platformer.util.GdxGameUtils.createBoundingRectangle;
 
@@ -24,6 +26,7 @@ public class Tank {
     public GridPoint2 playerDestinationCoordinates;
     public float playerMovementProgress = 1f;
     public float playerRotation;
+    public ObjectDirection playerDirection;
 
 
     public Tank(String imagePath, int xCooordinate, int yCoordinate) {
@@ -35,6 +38,7 @@ public class Tank {
         this.playerDestinationCoordinates = new GridPoint2(xCooordinate, yCoordinate);
         this.playerCoordinates = new GridPoint2(this.playerDestinationCoordinates);
         this.playerRotation = 0f;
+        this.playerDirection = new ObjectDirection();
     }
 
     public void tryGoUp(Tree tree) {
@@ -75,6 +79,22 @@ public class Tank {
                 playerMovementProgress = 0f;
             }
             playerRotation = 0f;
+        }
+    }
+
+    public void moveOneTile(Tree tree) {
+        this.playerDirection.update();
+        if (this.playerDirection.dir == Direction.LEFT) {
+            this.tryGoLeft(tree);
+        }
+        else if (this.playerDirection.dir == Direction.UP) {
+            this.tryGoUp(tree);
+        }
+        else if (this.playerDirection.dir == Direction.RIGHT) {
+            this.tryGoRight(tree);
+        }
+        else if (this.playerDirection.dir == Direction.DOWN) {
+            this.tryGoDown(tree);
         }
     }
 

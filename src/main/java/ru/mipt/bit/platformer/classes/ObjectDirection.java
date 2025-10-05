@@ -2,37 +2,29 @@ package ru.mipt.bit.platformer.classes;
 
 import com.badlogic.gdx.Gdx;
 import static com.badlogic.gdx.Input.Keys.*;
+import com.badlogic.gdx.math.GridPoint2;
 
-enum Direction {
-    IDLE,
-    LEFT,
-    UP,
-    RIGHT,
-    DOWN
-}
+import ru.mipt.bit.platformer.classes.Direction;
+import ru.mipt.bit.platformer.classes.KeyboardListener;
 
 public class ObjectDirection {
     public Direction dir;
+    private KeyboardListener kl;
 
     public ObjectDirection() {
         this.dir = Direction.UP;
+        this.kl = new KeyboardListener();
+    }
+
+    public GridPoint2 getDirectionVector() {
+        return new GridPoint2(dir.vector);
+    }
+
+    public float getRotation() {
+        return dir.rotation;
     }
 
     public void update() {
-        if (Gdx.input.isKeyPressed(UP) || Gdx.input.isKeyPressed(W)) {
-            this.dir = Direction.UP;
-        }
-        else if (Gdx.input.isKeyPressed(LEFT) || Gdx.input.isKeyPressed(A)) {
-            this.dir = Direction.LEFT;
-        }
-        else if (Gdx.input.isKeyPressed(DOWN) || Gdx.input.isKeyPressed(S)) {
-            this.dir = Direction.DOWN;
-        }
-        else if (Gdx.input.isKeyPressed(RIGHT) || Gdx.input.isKeyPressed(D)) {
-            this.dir = Direction.RIGHT;
-        }
-        else {
-            this.dir = Direction.IDLE;
-        }
+        dir = kl.captureMovementKey();
     }
 }

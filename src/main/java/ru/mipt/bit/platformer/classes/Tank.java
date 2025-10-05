@@ -12,90 +12,68 @@ import static ru.mipt.bit.platformer.util.GdxGameUtils.*;
 
 import ru.mipt.bit.platformer.classes.Tree;
 import ru.mipt.bit.platformer.classes.Direction;
+import ru.mipt.bit.platformer.classes.Positionable;
 import ru.mipt.bit.platformer.classes.ObjectDirection;
 
 import static ru.mipt.bit.platformer.util.GdxGameUtils.createBoundingRectangle;
 
-public class Tank {
+public class Tank extends Positionable {
     // Texture decodes an image file and loads it into GPU memory, it represents a native resource
     public Texture texture;
     // TextureRegion represents Texture portion, there may be many TextureRegion instances of the same Texture
-    public TextureRegion playerGraphics;
-    public Rectangle playerRectangle;
-    public GridPoint2 playerCoordinates;
-    public GridPoint2 playerDestinationCoordinates;
-    public float playerMovementProgress = 1f;
-    public float playerRotation;
-    public ObjectDirection playerDirection;
+    public TextureRegion graphics;
+    public Rectangle rectangle;
+    public GridPoint2 destinationCoordinates;
+    public float movementProgress = 1f;
+    public float rotation;
+    public ObjectDirection direction;
 
 
     public Tank(String imagePath, int xCooordinate, int yCoordinate) {
+        super(xCooordinate, yCoordinate);
         this.texture = new Texture(imagePath);
-        this.playerGraphics = new TextureRegion(this.texture);
-        this.playerRectangle = createBoundingRectangle(this.playerGraphics);
+        this.graphics = new TextureRegion(this.texture);
+        this.rectangle = createBoundingRectangle(this.graphics);
 
-        // set player initial position
-        this.playerDestinationCoordinates = new GridPoint2(xCooordinate, yCoordinate);
-        this.playerCoordinates = new GridPoint2(this.playerDestinationCoordinates);
-        this.playerRotation = 0f;
-        this.playerDirection = new ObjectDirection();
+        // set initial position
+        this.destinationCoordinates = new GridPoint2(this.coordinates);
+        this.rotation = 0f;
+        this.direction = new ObjectDirection();
     }
 
-    public void tryGoUp(Tree tree) {
-        if (isEqual(playerMovementProgress, 1f)) {
-            // check potential player destination for collision with obstacles
-            if (!tree.treeCoordinates.equals(incrementedY(playerCoordinates))) {
-                playerDestinationCoordinates.y++;
-                playerMovementProgress = 0f;
+    private boolean isMovementActionCompleted() {
+        return isEqual(movementProgress, 1f);
+    }
+
+    private boolean collidesWithObstacle(Positionable obstacle) {
+        return obstacle.coordinates.equals(coordinates.cpy().add(direction.getDirectionVector()));
+    }
+
+    public void tryGo(Positionable[] obstacles) {
+        if (isMovementActionCompleted()) {
+            boolean noCollision = true;
+            for (Positionable obstacle : obstacles) {
+                if (collidesWithObstacle(obstacle)) {
+                    noCollision = false;
+                    break;
+                }
             }
-            playerRotation = 90f;
-        }
-    }
-
-    public void tryGoLeft(Tree tree) {
-        if (isEqual(playerMovementProgress, 1f)) {
-            if (!tree.treeCoordinates.equals(decrementedX(playerCoordinates))) {
-                playerDestinationCoordinates.x--;
-                playerMovementProgress = 0f;
+            if (noCollision) {
+                destinationCoordinates.add(direction.getDirectionVector());
+                movementProgress = 0f;
             }
-            playerRotation = -180f;
-        }
-    }
-
-    public void tryGoDown(Tree tree) {
-        if (isEqual(playerMovementProgress, 1f)) {
-            if (!tree.treeCoordinates.equals(decrementedY(playerCoordinates))) {
-                playerDestinationCoordinates.y--;
-                playerMovementProgress = 0f;
+            if (direction.dir != Direction.IDLE) {
+                rotation = direction.getRotation();
             }
-            playerRotation = -90f;
         }
     }
 
-    public void tryGoRight(Tree tree) {
-         if (isEqual(playerMovementProgress, 1f)) {
-            if (!tree.treeCoordinates.equals(incrementedX(playerCoordinates))) {
-                playerDestinationCoordinates.x++;
-                playerMovementProgress = 0f;
-            }
-            playerRotation = 0f;
-        }
+    public void updateDirection() {
+        this.direction.update();
     }
 
-    public void moveOneTile(Tree tree) {
-        this.playerDirection.update();
-        if (this.playerDirection.dir == Direction.LEFT) {
-            this.tryGoLeft(tree);
-        }
-        else if (this.playerDirection.dir == Direction.UP) {
-            this.tryGoUp(tree);
-        }
-        else if (this.playerDirection.dir == Direction.RIGHT) {
-            this.tryGoRight(tree);
-        }
-        else if (this.playerDirection.dir == Direction.DOWN) {
-            this.tryGoDown(tree);
-        }
+    public void moveSelfInCurrentDirection(Positionable[] obstacles) {
+        tryGo(obstacles);
     }
 
     public void dispose() {

@@ -5,19 +5,20 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.GridPoint2;
 
+import ru.mipt.bit.platformer.classes.Positionable;
+
 import static ru.mipt.bit.platformer.util.GdxGameUtils.createBoundingRectangle;
 
-public class Tree {
+public class Tree extends Positionable {
     public Texture texture;
-    public TextureRegion treeGraphics;
-    public GridPoint2 treeCoordinates = new GridPoint2();
-    public Rectangle treeRectangle = new Rectangle();
+    public TextureRegion graphics;
+    public Rectangle rectangle = new Rectangle();
 
     public Tree(String imagePath, int xCoordinate, int yCoordinate) {
+        super(xCoordinate, yCoordinate);
         this.texture = new Texture(imagePath);
-        this.treeGraphics = new TextureRegion(this.texture);
-        this.treeRectangle = createBoundingRectangle(this.treeGraphics);
-        this.treeCoordinates = new GridPoint2(xCoordinate, yCoordinate);
+        this.graphics = new TextureRegion(this.texture);
+        this.rectangle = createBoundingRectangle(this.graphics);
     }
 
     public void dispose() {

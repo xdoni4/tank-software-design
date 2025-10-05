@@ -18,6 +18,7 @@ import com.badlogic.gdx.math.Rectangle;
 import ru.mipt.bit.platformer.util.TileMovement;
 import ru.mipt.bit.platformer.classes.Tank;
 import ru.mipt.bit.platformer.classes.Tree;
+import ru.mipt.bit.platformer.classes.Positionable;
 
 import static com.badlogic.gdx.Input.Keys.*;
 import static com.badlogic.gdx.graphics.GL20.GL_COLOR_BUFFER_BIT;
@@ -49,27 +50,32 @@ public class GameDesktopLauncher implements ApplicationListener {
 
         tank = new Tank("images/tank_blue.png", 1, 1);
         tree = new Tree("images/greenTree.png", 1, 3);
-        moveRectangleAtTileCenter(groundLayer, tree.treeRectangle, tree.treeCoordinates);
+        moveRectangleAtTileCenter(groundLayer, tree.rectangle, tree.coordinates);
+    }
+
+    private void glClearScreen() {
+        Gdx.gl.glClearColor(0f, 0f, 0.2f, 1f);
+        Gdx.gl.glClear(GL_COLOR_BUFFER_BIT);
     }
 
     @Override
     public void render() {
         // clear the screen
-        Gdx.gl.glClearColor(0f, 0f, 0.2f, 1f);
-        Gdx.gl.glClear(GL_COLOR_BUFFER_BIT);
-
+        glClearScreen();
         // get time passed since the last render
         float deltaTime = Gdx.graphics.getDeltaTime();
-
-        tank.moveOneTile(tree);
+        
+        tank.updateDirection();
+        Positionable[] obstacles = {tree};
+        tank.moveSelfInCurrentDirection(obstacles);
 
         // calculate interpolated player screen coordinates
-        tileMovement.moveRectangleBetweenTileCenters(tank.playerRectangle, tank.playerCoordinates, tank.playerDestinationCoordinates, tank.playerMovementProgress);
+        tileMovement.moveRectangleBetweenTileCenters(tank.rectangle, tank.coordinates, tank.destinationCoordinates, tank.movementProgress);
 
-        tank.playerMovementProgress = continueProgress(tank.playerMovementProgress, deltaTime, MOVEMENT_SPEED);
-        if (isEqual(tank.playerMovementProgress, 1f)) {
+        tank.movementProgress = continueProgress(tank.movementProgress, deltaTime, MOVEMENT_SPEED);
+        if (isEqual(tank.movementProgress, 1f)) {
             // record that the player has reached his/her destination
-            tank.playerCoordinates.set(tank.playerDestinationCoordinates);
+            tank.coordinates.set(tank.destinationCoordinates);
         }
 
         // render each tile of the level
@@ -79,10 +85,10 @@ public class GameDesktopLauncher implements ApplicationListener {
         batch.begin();
 
         // render player
-        drawTextureRegionUnscaled(batch, tank.playerGraphics, tank.playerRectangle, tank.playerRotation);
+        drawTextureRegionUnscaled(batch, tank.graphics, tank.rectangle, tank.rotation);
 
         // render tree obstacle
-        drawTextureRegionUnscaled(batch, tree.treeGraphics, tree.treeRectangle, 0f);
+        drawTextureRegionUnscaled(batch, tree.graphics, tree.rectangle, 0f);
 
         // submit all drawing requests
         batch.end();

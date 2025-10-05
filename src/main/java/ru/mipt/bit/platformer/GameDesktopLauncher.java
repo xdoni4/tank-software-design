@@ -19,6 +19,8 @@ import ru.mipt.bit.platformer.util.TileMovement;
 import ru.mipt.bit.platformer.classes.Tank;
 import ru.mipt.bit.platformer.classes.Tree;
 import ru.mipt.bit.platformer.classes.Positionable;
+import ru.mipt.bit.platformer.classes.Graphics;
+
 
 import static com.badlogic.gdx.Input.Keys.*;
 import static com.badlogic.gdx.graphics.GL20.GL_COLOR_BUFFER_BIT;
@@ -26,9 +28,6 @@ import static com.badlogic.gdx.math.MathUtils.isEqual;
 import static ru.mipt.bit.platformer.util.GdxGameUtils.*;
 
 public class GameDesktopLauncher implements ApplicationListener {
-
-    private static final float MOVEMENT_SPEED = 0.4f;
-
     private Batch batch;
 
     private TiledMap level;
@@ -37,6 +36,8 @@ public class GameDesktopLauncher implements ApplicationListener {
 
     private Tank tank;
     private Tree tree;
+    private Graphics tankGraphics;
+    private Graphics treeGraphics;
 
     @Override
     public void create() {
@@ -48,9 +49,11 @@ public class GameDesktopLauncher implements ApplicationListener {
         TiledMapTileLayer groundLayer = getSingleLayer(level);
         tileMovement = new TileMovement(groundLayer, Interpolation.smooth);
 
-        tank = new Tank("images/tank_blue.png", 1, 1);
-        tree = new Tree("images/greenTree.png", 1, 3);
-        moveRectangleAtTileCenter(groundLayer, tree.rectangle, tree.coordinates);
+        tank = new Tank(1, 1, 0.4f);
+        tree = new Tree(1, 3);
+        tankGraphics = new Graphics("images/tank_blue.png");
+        treeGraphics = new Graphics("images/greenTree.png");
+        moveRectangleAtTileCenter(groundLayer, treeGraphics.rectangle, tree.coordinates);
     }
 
     private void glClearScreen() {
@@ -70,9 +73,9 @@ public class GameDesktopLauncher implements ApplicationListener {
         tank.moveSelfInCurrentDirection(obstacles);
 
         // calculate interpolated player screen coordinates
-        tileMovement.moveRectangleBetweenTileCenters(tank.rectangle, tank.coordinates, tank.destinationCoordinates, tank.movementProgress);
+        tileMovement.moveRectangleBetweenTileCenters(tankGraphics.rectangle, tank.coordinates, tank.destinationCoordinates, tank.movementProgress);
 
-        tank.movementProgress = continueProgress(tank.movementProgress, deltaTime, MOVEMENT_SPEED);
+        tank.movementProgress = continueProgress(tank.movementProgress, deltaTime, tank.movementSpeed);
         if (isEqual(tank.movementProgress, 1f)) {
             // record that the player has reached his/her destination
             tank.coordinates.set(tank.destinationCoordinates);
@@ -85,10 +88,10 @@ public class GameDesktopLauncher implements ApplicationListener {
         batch.begin();
 
         // render player
-        drawTextureRegionUnscaled(batch, tank.graphics, tank.rectangle, tank.rotation);
+        drawTextureRegionUnscaled(batch, tankGraphics.graphics, tankGraphics.rectangle, tank.rotation);
 
         // render tree obstacle
-        drawTextureRegionUnscaled(batch, tree.graphics, tree.rectangle, 0f);
+        drawTextureRegionUnscaled(batch, treeGraphics.graphics, treeGraphics.rectangle, 0f);
 
         // submit all drawing requests
         batch.end();

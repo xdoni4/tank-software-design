@@ -1,8 +1,5 @@
 package ru.mipt.bit.platformer.classes;
 
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.GridPoint2;
 
 import com.badlogic.gdx.Gdx;
@@ -14,31 +11,27 @@ import ru.mipt.bit.platformer.classes.Tree;
 import ru.mipt.bit.platformer.classes.Direction;
 import ru.mipt.bit.platformer.classes.Positionable;
 import ru.mipt.bit.platformer.classes.ObjectDirection;
+import ru.mipt.bit.platformer.classes.Graphics;
 
-import static ru.mipt.bit.platformer.util.GdxGameUtils.createBoundingRectangle;
 
 public class Tank extends Positionable {
-    // Texture decodes an image file and loads it into GPU memory, it represents a native resource
-    public Texture texture;
-    // TextureRegion represents Texture portion, there may be many TextureRegion instances of the same Texture
-    public TextureRegion graphics;
-    public Rectangle rectangle;
+    public Graphics graphics;
     public GridPoint2 destinationCoordinates;
     public float movementProgress = 1f;
     public float rotation;
     public ObjectDirection direction;
+    public float movementSpeed = 0f;
 
-
-    public Tank(String imagePath, int xCooordinate, int yCoordinate) {
+//String imagePath, 
+    public Tank(int xCooordinate, int yCoordinate, float movementSpeed) {
         super(xCooordinate, yCoordinate);
-        this.texture = new Texture(imagePath);
-        this.graphics = new TextureRegion(this.texture);
-        this.rectangle = createBoundingRectangle(this.graphics);
+        // this.graphics = new Graphics(imagePath);
 
         // set initial position
         this.destinationCoordinates = new GridPoint2(this.coordinates);
         this.rotation = 0f;
         this.direction = new ObjectDirection();
+        this.movementSpeed = movementSpeed;
     }
 
     private boolean isMovementActionCompleted() {
@@ -77,6 +70,6 @@ public class Tank extends Positionable {
     }
 
     public void dispose() {
-        texture.dispose();
+        graphics.dispose();
     }
 }

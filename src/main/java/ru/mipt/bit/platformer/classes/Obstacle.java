@@ -1,9 +1,8 @@
 package ru.mipt.bit.platformer.classes;
 import ru.mipt.bit.platformer.classes.Positionable;
 
-
-public class Tree extends Obstacle {
-    public Tree(int xCoordinate, int yCoordinate) {
+public class Obstacle extends Positionable {
+    public Obstacle(int xCoordinate, int yCoordinate) {
         super(xCoordinate, yCoordinate);
     }
 }

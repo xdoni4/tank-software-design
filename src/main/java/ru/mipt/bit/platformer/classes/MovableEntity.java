@@ -1,5 +1,7 @@
 package ru.mipt.bit.platformer.classes;
 
+import java.util.ArrayList;
+
 import com.badlogic.gdx.math.GridPoint2;
 
 import com.badlogic.gdx.Gdx;
@@ -39,7 +41,7 @@ public class MovableEntity extends Positionable implements Movable {
         return obstacle.coordinates.equals(coordinates.cpy().add(direction.getDirectionVector()));
     }
 
-    public void tryGo(Positionable[] obstacles) {
+    public void tryGo(ArrayList<? extends Positionable> obstacles) {
         if (isMovementActionCompleted()) {
             boolean noCollision = true;
             for (Positionable obstacle : obstacles) {
@@ -62,7 +64,7 @@ public class MovableEntity extends Positionable implements Movable {
         this.direction.update();
     }
 
-    public void moveSelfInCurrentDirection(Positionable[] obstacles) {
+    public void moveSelfInCurrentDirection(ArrayList<? extends Positionable> obstacles) {
         tryGo(obstacles);
     }
 }

@@ -1,5 +1,7 @@
 package ru.mipt.bit.platformer;
 
+import java.util.ArrayList;
+
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
@@ -22,6 +24,7 @@ import ru.mipt.bit.platformer.classes.Tree;
 import ru.mipt.bit.platformer.classes.Tank;
 import ru.mipt.bit.platformer.classes.Positionable;
 import ru.mipt.bit.platformer.classes.Graphics;
+import ru.mipt.bit.platformer.classes.MapLayout;
 
 
 import static com.badlogic.gdx.Input.Keys.*;
@@ -35,11 +38,12 @@ public class GameDesktopLauncher implements ApplicationListener {
     private TiledMap level;
     private MapRenderer levelRenderer;
     private TileMovement tileMovement;
+    private MapLayout mapLayout;
 
     private MovableEntity player;
-    private Obstacle[] obstacles;
+    private ArrayList<Obstacle> obstacles;
     private Graphics playerGraphics;
-    private Graphics[] obstaclesGraphics;
+    private ArrayList<Graphics> obstaclesGraphics;
 
     @Override
     public void create() {
@@ -50,20 +54,26 @@ public class GameDesktopLauncher implements ApplicationListener {
         levelRenderer = createSingleLayerMapRenderer(level, batch);
         TiledMapTileLayer groundLayer = getSingleLayer(level);
         tileMovement = new TileMovement(groundLayer, Interpolation.smooth);
+        // mapLayout = new MapLayout(groundLayer);
+        mapLayout = new MapLayout("mapLayout.txt");
 
-        player = new Tank(1, 1, 0.4f);
-        // tree = new Tree(1, 3);
-        obstacles = new Obstacle[] {
-            new Tree(1, 3)
-        };
+        GridPoint2 playerCoordinates = mapLayout.layout.get("Player").get(0);
+        player = new Tank(playerCoordinates.x, playerCoordinates.y, 0.4f);
+
+        obstacles = new ArrayList<>();
+        for (GridPoint2 obstacleCoordinates : mapLayout.layout.get("Obstacles")) {
+            obstacles.add(new Tree(obstacleCoordinates.x, obstacleCoordinates.y));
+        }
+
         playerGraphics = new Graphics("images/tank_blue.png");
-        // treeGraphics = new Graphics("images/greenTree.png");
-        obstaclesGraphics = new Graphics[] {
-            new Graphics("images/greenTree.png")
-        };
-        for (int i = 0; i < obstacles.length; i++) {
-            Obstacle obstacle = obstacles[i];
-            Graphics obstacleG = obstaclesGraphics[i];
+        obstaclesGraphics = new ArrayList<>(); 
+        for (int i = 0; i < obstacles.size(); i++) {
+            obstaclesGraphics.add(new Graphics("images/greenTree.png"));
+        }
+
+        for (int i = 0; i < obstacles.size(); i++) {
+            Obstacle obstacle = obstacles.get(i);
+            Graphics obstacleG = obstaclesGraphics.get(i);
             moveRectangleAtTileCenter(groundLayer, obstacleG.rectangle, obstacle.coordinates);
         }
     }
@@ -99,7 +109,6 @@ public class GameDesktopLauncher implements ApplicationListener {
             }
         if (obstacles != null) {
             player.updateDirection();
-            // Positionable[] obstacles = {tree};
             player.moveSelfInCurrentDirection(obstacles);
 
             // calculate interpolated player screen coordinates
@@ -110,8 +119,8 @@ public class GameDesktopLauncher implements ApplicationListener {
 
     private void renderObstacles() {
          if (obstaclesGraphics != null) {
-            for (int i = 0; i < obstaclesGraphics.length; i++) {
-                Graphics obstacleG = obstaclesGraphics[i];
+            for (int i = 0; i < obstaclesGraphics.size(); i++) {
+                Graphics obstacleG = obstaclesGraphics.get(i);
                 drawTextureRegionUnscaled(batch, obstacleG.graphics, obstacleG.rectangle, 0f);
             }
         }

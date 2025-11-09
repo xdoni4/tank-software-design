@@ -27,9 +27,14 @@ import ru.mipt.bit.platformer.classes.Tree;
 import ru.mipt.bit.platformer.classes.Tank;
 import ru.mipt.bit.platformer.classes.Positionable;
 import ru.mipt.bit.platformer.classes.Graphics;
+import ru.mipt.bit.platformer.classes.MovableEntityGraphics;
 import ru.mipt.bit.platformer.classes.MapLayout;
 import ru.mipt.bit.platformer.classes.KeyboardListener;
 import ru.mipt.bit.platformer.classes.MoveCommand;
+import ru.mipt.bit.platformer.classes.Drawable;
+import ru.mipt.bit.platformer.classes.DrawableMovable;
+import ru.mipt.bit.platformer.classes.HealthBarDecorator;
+import ru.mipt.bit.platformer.classes.ExecutionSuppressor;
 
 
 import static com.badlogic.gdx.Input.Keys.*;
@@ -45,12 +50,13 @@ public class GameDesktopLauncher implements ApplicationListener {
     private TileMovement tileMovement;
     private MapLayout mapLayout;
 
-    private MovableEntity humanPlayer;
+    private Tank humanPlayer;
     private ArrayList<Obstacle> obstacles;
-    private ArrayList<MovableEntity> aiPlayers;
-    private Graphics humanPlayerGraphics;
-    private ArrayList<Graphics> aiPlayersGraphics;
+    private ArrayList<Tank> aiPlayers;
+    private DrawableMovable humanPlayerGraphics;
+    private ArrayList<DrawableMovable> aiPlayersGraphics;
     private ArrayList<Graphics> obstaclesGraphics;
+    private ExecutionSuppressor healthBarSuppressor;
 
     private KeyboardListener kl;
 
@@ -67,6 +73,7 @@ public class GameDesktopLauncher implements ApplicationListener {
         // mapLayout = new MapLayout("mapLayout.txt");
 
         kl = new KeyboardListener();
+        healthBarSuppressor = new ExecutionSuppressor();
 
         GridPoint2 humanPlayerCoordinates = mapLayout.layout.get("Player").get(0);
         humanPlayer = new Tank(humanPlayerCoordinates.x, humanPlayerCoordinates.y, 0.4f);
@@ -80,11 +87,21 @@ public class GameDesktopLauncher implements ApplicationListener {
         for (GridPoint2 obstacleCoordinates : mapLayout.layout.get("Obstacles")) {
             obstacles.add(new Tree(obstacleCoordinates.x, obstacleCoordinates.y));
         }
-        humanPlayerGraphics = new Graphics("images/tank_blue.png");
+        humanPlayerGraphics = new HealthBarDecorator(
+            new MovableEntityGraphics("images/tank_blue.png"),
+            humanPlayer,
+            healthBarSuppressor
+        );
 
         aiPlayersGraphics = new ArrayList<>();
         for (int i = 0; i < aiPlayers.size(); i++) {
-            aiPlayersGraphics.add(new Graphics("images/tank_safari_mesh.png"));
+            aiPlayersGraphics.add(
+                new HealthBarDecorator(
+                    new MovableEntityGraphics("images/tank_safari_mesh.png"),
+                    aiPlayers.get(i),
+                    healthBarSuppressor
+                )
+            );
         }
         obstaclesGraphics = new ArrayList<>(); 
         for (int i = 0; i < obstacles.size(); i++) {
@@ -99,7 +116,6 @@ public class GameDesktopLauncher implements ApplicationListener {
         for (GridPoint2 bordersCoordinates : mapLayout.layout.get("Borders")) {
             obstacles.add(new Obstacle(bordersCoordinates.x, bordersCoordinates.y));
         }
-        System.out.println(mapLayout.layout);
     }
 
     private void glClearScreen() {
@@ -163,7 +179,7 @@ public class GameDesktopLauncher implements ApplicationListener {
         batch.end();
     }
 
-    private void renderPlayer(MovableEntity player, Graphics playerGraphics, MoveCommand moveCommand) {
+    private void renderPlayer(MovableEntity player, DrawableMovable playerGraphics, MoveCommand moveCommand) {
         // get time passed since the last render
         float deltaTime = Gdx.graphics.getDeltaTime();
         player.movementProgress = continueProgress(player.movementProgress, deltaTime, player.movementSpeed);
@@ -172,16 +188,17 @@ public class GameDesktopLauncher implements ApplicationListener {
             player.coordinates.set(player.destinationCoordinates);
             moveCommand.execute();
             player.updateDirection(kl.captureMovementKey());
+            healthBarSuppressor.update(kl.captureLKey());
         }
         // calculate interpolated player screen coordinates
-        tileMovement.moveRectangleBetweenTileCenters(playerGraphics.rectangle, player.coordinates, player.destinationCoordinates, player.movementProgress);
-        drawTextureRegionUnscaled(batch, playerGraphics.graphics, playerGraphics.rectangle, player.rotation);
+        // tileMovement.moveRectangleBetweenTileCenters(playerGraphics.rectangle, player.coordinates, player.destinationCoordinates, player.movementProgress);
+        playerGraphics.draw(batch, player, tileMovement);
     }
 
     private void renderAIPlayers(ArrayList<MoveCommand> moveCommands) {
         for (int i = 0; i < aiPlayers.size(); i++) {
             MovableEntity player = aiPlayers.get(i);
-            Graphics playerGraphics = aiPlayersGraphics.get(i);
+            DrawableMovable playerGraphics = aiPlayersGraphics.get(i);
             renderPlayer(player, playerGraphics, moveCommands.get(i+1));
         }
     }
@@ -190,7 +207,7 @@ public class GameDesktopLauncher implements ApplicationListener {
          if (obstaclesGraphics != null) {
             for (int i = 0; i < obstaclesGraphics.size(); i++) {
                 Graphics obstacleG = obstaclesGraphics.get(i);
-                drawTextureRegionUnscaled(batch, obstacleG.graphics, obstacleG.rectangle, 0f);
+                obstacleG.draw(batch, 0f);
             }
         }
     }

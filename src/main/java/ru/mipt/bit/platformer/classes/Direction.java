@@ -19,4 +19,12 @@ public enum Direction {
         this.vector = vector;
         this.rotation = rotation;
     }
+
+    public GridPoint2 getDirectionVector() {
+        return vector;
+    }
+
+    public float getRotation() {
+        return rotation;
+    }
 }

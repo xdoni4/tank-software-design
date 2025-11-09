@@ -1,6 +1,8 @@
 package ru.mipt.bit.platformer;
 
+import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Random;
 
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
@@ -19,12 +21,15 @@ import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.Rectangle;
 import ru.mipt.bit.platformer.util.TileMovement;
 import ru.mipt.bit.platformer.classes.MovableEntity;
+import ru.mipt.bit.platformer.classes.Direction;
 import ru.mipt.bit.platformer.classes.Obstacle;
 import ru.mipt.bit.platformer.classes.Tree;
 import ru.mipt.bit.platformer.classes.Tank;
 import ru.mipt.bit.platformer.classes.Positionable;
 import ru.mipt.bit.platformer.classes.Graphics;
 import ru.mipt.bit.platformer.classes.MapLayout;
+import ru.mipt.bit.platformer.classes.KeyboardListener;
+import ru.mipt.bit.platformer.classes.MoveCommand;
 
 
 import static com.badlogic.gdx.Input.Keys.*;
@@ -40,10 +45,14 @@ public class GameDesktopLauncher implements ApplicationListener {
     private TileMovement tileMovement;
     private MapLayout mapLayout;
 
-    private MovableEntity player;
+    private MovableEntity humanPlayer;
     private ArrayList<Obstacle> obstacles;
-    private Graphics playerGraphics;
+    private ArrayList<MovableEntity> aiPlayers;
+    private Graphics humanPlayerGraphics;
+    private ArrayList<Graphics> aiPlayersGraphics;
     private ArrayList<Graphics> obstaclesGraphics;
+
+    private KeyboardListener kl;
 
     @Override
     public void create() {
@@ -54,18 +63,29 @@ public class GameDesktopLauncher implements ApplicationListener {
         levelRenderer = createSingleLayerMapRenderer(level, batch);
         TiledMapTileLayer groundLayer = getSingleLayer(level);
         tileMovement = new TileMovement(groundLayer, Interpolation.smooth);
-        // mapLayout = new MapLayout(groundLayer);
-        mapLayout = new MapLayout("mapLayout.txt");
+        mapLayout = new MapLayout(groundLayer);
+        // mapLayout = new MapLayout("mapLayout.txt");
 
-        GridPoint2 playerCoordinates = mapLayout.layout.get("Player").get(0);
-        player = new Tank(playerCoordinates.x, playerCoordinates.y, 0.4f);
+        kl = new KeyboardListener();
+
+        GridPoint2 humanPlayerCoordinates = mapLayout.layout.get("Player").get(0);
+        humanPlayer = new Tank(humanPlayerCoordinates.x, humanPlayerCoordinates.y, 0.4f);
+
+        aiPlayers = new ArrayList<>();
+        for (GridPoint2 aiPlayersCoordinates : mapLayout.layout.get("AI")) {
+            aiPlayers.add(new Tank(aiPlayersCoordinates.x, aiPlayersCoordinates.y, 0.4f));
+        }
 
         obstacles = new ArrayList<>();
         for (GridPoint2 obstacleCoordinates : mapLayout.layout.get("Obstacles")) {
             obstacles.add(new Tree(obstacleCoordinates.x, obstacleCoordinates.y));
         }
+        humanPlayerGraphics = new Graphics("images/tank_blue.png");
 
-        playerGraphics = new Graphics("images/tank_blue.png");
+        aiPlayersGraphics = new ArrayList<>();
+        for (int i = 0; i < aiPlayers.size(); i++) {
+            aiPlayersGraphics.add(new Graphics("images/tank_safari_mesh.png"));
+        }
         obstaclesGraphics = new ArrayList<>(); 
         for (int i = 0; i < obstacles.size(); i++) {
             obstaclesGraphics.add(new Graphics("images/greenTree.png"));
@@ -76,11 +96,55 @@ public class GameDesktopLauncher implements ApplicationListener {
             Graphics obstacleG = obstaclesGraphics.get(i);
             moveRectangleAtTileCenter(groundLayer, obstacleG.rectangle, obstacle.coordinates);
         }
+        for (GridPoint2 bordersCoordinates : mapLayout.layout.get("Borders")) {
+            obstacles.add(new Obstacle(bordersCoordinates.x, bordersCoordinates.y));
+        }
+        System.out.println(mapLayout.layout);
     }
 
     private void glClearScreen() {
         Gdx.gl.glClearColor(0f, 0f, 0.2f, 1f);
         Gdx.gl.glClear(GL_COLOR_BUFFER_BIT);
+    }
+
+    private ArrayList<MoveCommand> initiateMoving() {
+        ArrayList<MoveCommand> moveCommands = new ArrayList<>();
+        ArrayList<GridPoint2> obstacleCoordinates = new ArrayList<>();
+
+        int idx = 0;
+
+        moveCommands.add(
+            new MoveCommand(
+                humanPlayer,
+                humanPlayer.direction,
+                obstacleCoordinates,
+                new ArrayList<>(Arrays.asList(idx, idx+1))
+            )
+        );
+        obstacleCoordinates.add(humanPlayer.coordinates);
+        obstacleCoordinates.add(humanPlayer.coordinates.cpy().add(humanPlayer.direction.getDirectionVector()));
+
+        idx += 2;
+
+        for (MovableEntity aiPlayer : aiPlayers) {
+            Direction dir = Direction.values()[(new Random()).nextInt(Direction.values().length)];
+            moveCommands.add(
+                new MoveCommand(
+                    aiPlayer,
+                    dir,
+                    obstacleCoordinates,
+                    new ArrayList<>(Arrays.asList(idx, idx+1))
+                )
+            );
+            obstacleCoordinates.add(aiPlayer.coordinates);
+            obstacleCoordinates.add(aiPlayer.coordinates.cpy().add(dir.getDirectionVector()));
+            idx += 2;
+        }
+        for (Obstacle obstacle: obstacles) {
+            obstacleCoordinates.add(obstacle.coordinates);
+        }
+
+        return moveCommands;
     }
 
     private void startRendering() {
@@ -99,22 +163,27 @@ public class GameDesktopLauncher implements ApplicationListener {
         batch.end();
     }
 
-    private void renderPlayer() {
+    private void renderPlayer(MovableEntity player, Graphics playerGraphics, MoveCommand moveCommand) {
         // get time passed since the last render
         float deltaTime = Gdx.graphics.getDeltaTime();
         player.movementProgress = continueProgress(player.movementProgress, deltaTime, player.movementSpeed);
-            if (isEqual(player.movementProgress, 1f)) {
-                // record that the player has reached his/her destination
-                player.coordinates.set(player.destinationCoordinates);
-            }
-        if (obstacles != null) {
-            player.updateDirection();
-            player.moveSelfInCurrentDirection(obstacles);
-
-            // calculate interpolated player screen coordinates
-            tileMovement.moveRectangleBetweenTileCenters(playerGraphics.rectangle, player.coordinates, player.destinationCoordinates, player.movementProgress);
+        if (isEqual(player.movementProgress, 1f)) {
+            // record that the player has reached his/her destination
+            player.coordinates.set(player.destinationCoordinates);
+            moveCommand.execute();
+            player.updateDirection(kl.captureMovementKey());
         }
+        // calculate interpolated player screen coordinates
+        tileMovement.moveRectangleBetweenTileCenters(playerGraphics.rectangle, player.coordinates, player.destinationCoordinates, player.movementProgress);
         drawTextureRegionUnscaled(batch, playerGraphics.graphics, playerGraphics.rectangle, player.rotation);
+    }
+
+    private void renderAIPlayers(ArrayList<MoveCommand> moveCommands) {
+        for (int i = 0; i < aiPlayers.size(); i++) {
+            MovableEntity player = aiPlayers.get(i);
+            Graphics playerGraphics = aiPlayersGraphics.get(i);
+            renderPlayer(player, playerGraphics, moveCommands.get(i+1));
+        }
     }
 
     private void renderObstacles() {
@@ -128,10 +197,14 @@ public class GameDesktopLauncher implements ApplicationListener {
 
     @Override
     public void render() {
+        ArrayList<MoveCommand> moveCommands = initiateMoving();
         startRendering();
 
         // render player
-        renderPlayer();
+        renderPlayer(humanPlayer, humanPlayerGraphics, moveCommands.get(0));
+
+        // render AI players
+        renderAIPlayers(moveCommands);
 
         // render obstacles
         renderObstacles();

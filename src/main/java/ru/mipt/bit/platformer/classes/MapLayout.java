@@ -35,23 +35,33 @@ public class MapLayout {
             availableTiles.add(i);
         }
         int nObstacles = rand.nextInt(10);
+        int nAi = rand.nextInt(4) + 1;
+
+        ArrayList<GridPoint2> bordersCoordinates = getBorders(mapWidth, mapHeight);
 
         ArrayList<GridPoint2> playerCoordinates = new ArrayList<>();
         playerCoordinates.add(getUnoccupiedTile());
+
+        ArrayList<GridPoint2> aiCoordinates = new ArrayList<>();
+        for (int i = 0; i < nAi; i++) {
+            aiCoordinates.add(getUnoccupiedTile());
+        }
 
         ArrayList<GridPoint2> obstacleCoordinates = new ArrayList<>();
         for (int i = 0; i < nObstacles; i++) {
             obstacleCoordinates.add(getUnoccupiedTile());
         }
 
-        updateLayout(playerCoordinates, obstacleCoordinates);
+        updateLayout(playerCoordinates, aiCoordinates, obstacleCoordinates, bordersCoordinates);
     }
 
     public MapLayout(String layoutMapPath) {
         int flatTile = 0;
         layout = new HashMap<>();
         ArrayList<GridPoint2> playerCoordinates = new ArrayList<>();
+        ArrayList<GridPoint2> aiCoordinates = new ArrayList<>();
         ArrayList<GridPoint2> obstacleCoordinates = new ArrayList<>();
+        ArrayList<GridPoint2> bordersCoordinates = new ArrayList<>();
 
         try (InputStream is = getClass().getClassLoader().getResourceAsStream(layoutMapPath);
              BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
@@ -62,16 +72,21 @@ public class MapLayout {
             mapHeight = rowsReversed.size();
             mapWidth = rowsReversed.get(0).length();
 
+            bordersCoordinates = getBorders(mapWidth, mapHeight);
+
             for (int i = rowsReversed.size() - 1; i >= 0; i--) {
                 String row = rowsReversed.get(i);
                 for (int j = 0; j < row.length(); j++) {
                     char c = row.charAt(j);
+                    GridPoint2 unoccupiedTile = gridPoint2FromFlatTile(flatTile);
+
                     if (c == 'X') {
-                        GridPoint2 unoccupiedTile = gridPoint2FromFlatTile(flatTile);
                         playerCoordinates.add(unoccupiedTile);
                     }
+                    else if (c == 'A') {
+                        aiCoordinates.add(unoccupiedTile);
+                    }
                     else if (c == 'T') {
-                        GridPoint2 unoccupiedTile = gridPoint2FromFlatTile(flatTile);
                         obstacleCoordinates.add(unoccupiedTile);
                     }
                     flatTile++;
@@ -80,13 +95,13 @@ public class MapLayout {
         } catch (IOException e) {
             System.err.println("Failed to read file: " + e.getMessage());
         }
-        updateLayout(playerCoordinates, obstacleCoordinates);
+        updateLayout(playerCoordinates, aiCoordinates, obstacleCoordinates, bordersCoordinates);
     }
 
     private GridPoint2 gridPoint2FromFlatTile(int flatTile) {
         GridPoint2 gp2 = new GridPoint2(
-            flatTile % mapHeight,
-            flatTile / mapHeight
+            flatTile / mapHeight,
+            flatTile % mapHeight
         );
         return gp2;
     }
@@ -98,8 +113,28 @@ public class MapLayout {
         return unoccupiedTile;
     }
 
-    private void updateLayout(ArrayList<GridPoint2> playerCoordinates, ArrayList<GridPoint2> obstacleCoordinates) {
+    private ArrayList<GridPoint2> getBorders(int width, int height) {
+        ArrayList<GridPoint2> bordersCoordinates = new ArrayList<>();
+        for (int i = 0; i < width; i++) {
+            bordersCoordinates.add(new GridPoint2(i, height));
+            bordersCoordinates.add(new GridPoint2(i, -1));
+        }
+        for (int i = 0; i < height; i++) {
+            bordersCoordinates.add(new GridPoint2(width, i));
+            bordersCoordinates.add(new GridPoint2(-1, i));
+        }
+        return bordersCoordinates;
+    }
+
+    private void updateLayout(
+        ArrayList<GridPoint2> playerCoordinates,
+        ArrayList<GridPoint2> aiCoordinates,
+        ArrayList<GridPoint2> obstacleCoordinates,
+        ArrayList<GridPoint2> bordersCoordinates
+    ) {
         layout.put("Player", playerCoordinates);
+        layout.put("AI", aiCoordinates);
         layout.put("Obstacles", obstacleCoordinates);
+        layout.put("Borders", bordersCoordinates);
     }
 }

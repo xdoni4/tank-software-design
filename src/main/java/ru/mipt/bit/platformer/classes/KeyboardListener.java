@@ -23,4 +23,10 @@ public class KeyboardListener {
             return Direction.IDLE;
         }
     }
+    public int captureLKey() {
+        if (Gdx.input.isKeyPressed(L)) {
+            return 1;
+        }
+        return 0;
+    }
 }

@@ -11,9 +11,9 @@ import ru.mipt.bit.platformer.classes.MovableEntity;
 
 public class MoveCommand implements Command {
     private MovableEntity movableEntity;
-    private Direction direction;
+    public Direction direction;
     private ArrayList<GridPoint2> obstacleCoordinates;
-    private ArrayList<Integer> idxsToSkip;
+    public ArrayList<Integer> idxsToSkip;
 
     public MoveCommand(
         MovableEntity movableEntity,
@@ -50,14 +50,13 @@ public class MoveCommand implements Command {
 
     @Override
     public void execute() {
+        movableEntity.updateDirection(direction);
+        if (direction != Direction.IDLE) {
+            movableEntity.rotation = direction.getRotation();
+        }
         if (!collidesWithObstacles()) {
             movableEntity.destinationCoordinates.add(direction.getDirectionVector());
-            movableEntity.movementProgress = 0f;
-            movableEntity.updateDirection(direction);
-
-            if (direction != Direction.IDLE) {
-                movableEntity.rotation = direction.getRotation();
-            }
         }
+        movableEntity.movementProgress = 0f;
     }
 }

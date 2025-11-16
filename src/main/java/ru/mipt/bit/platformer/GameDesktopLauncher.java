@@ -3,6 +3,7 @@ package ru.mipt.bit.platformer;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.HashMap;
 
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
@@ -126,38 +127,78 @@ public class GameDesktopLauncher implements ApplicationListener {
     private ArrayList<MoveCommand> initiateMoving() {
         ArrayList<MoveCommand> moveCommands = new ArrayList<>();
         ArrayList<GridPoint2> obstacleCoordinates = new ArrayList<>();
-
+        HashMap<GridPoint2, ArrayList<ArrayList<Integer>>> obstacleDestinationTies = new HashMap<>();
         int idx = 0;
 
+        Direction humanPlayerOrderedDirection = kl.captureMovementKey();
         moveCommands.add(
             new MoveCommand(
                 humanPlayer,
-                humanPlayer.direction,
+                humanPlayerOrderedDirection,
                 obstacleCoordinates,
-                new ArrayList<>(Arrays.asList(idx, idx+1))
+                new ArrayList<>(Arrays.asList(idx))
             )
         );
-        obstacleCoordinates.add(humanPlayer.coordinates);
-        obstacleCoordinates.add(humanPlayer.coordinates.cpy().add(humanPlayer.direction.getDirectionVector()));
-
+        obstacleCoordinates.add(humanPlayer.destinationCoordinates);
+        GridPoint2 destinationWithDirection = humanPlayer.destinationCoordinates.cpy().add(humanPlayerOrderedDirection.getDirectionVector());
+        obstacleCoordinates.add(destinationWithDirection);
+        if (obstacleDestinationTies.containsKey(destinationWithDirection)) {
+            obstacleDestinationTies.get(destinationWithDirection).add(new ArrayList<>(Arrays.asList(0, idx+1)));
+        }
+        else {
+            obstacleDestinationTies.put(destinationWithDirection, new ArrayList<>());
+            obstacleDestinationTies.get(destinationWithDirection).add(new ArrayList<>(Arrays.asList(0, idx+1)));
+        }
         idx += 2;
+        if (humanPlayer.movementProgress < 0.75) {
+            obstacleCoordinates.add(humanPlayer.coordinates);
+            moveCommands.get(0).idxsToSkip.add(idx);
+            idx += 1;
+        }
 
-        for (MovableEntity aiPlayer : aiPlayers) {
-            Direction dir = Direction.values()[(new Random()).nextInt(Direction.values().length)];
+        for (int i = 0; i < aiPlayers.size(); i++) {
+            MovableEntity aiPlayer = aiPlayers.get(i);
+            Direction aiPlayerOrderedDirection = Direction.values()[(new Random()).nextInt(Direction.values().length)];
             moveCommands.add(
                 new MoveCommand(
                     aiPlayer,
-                    dir,
+                    aiPlayerOrderedDirection,
                     obstacleCoordinates,
-                    new ArrayList<>(Arrays.asList(idx, idx+1))
+                    new ArrayList<>(Arrays.asList(idx))
                 )
             );
-            obstacleCoordinates.add(aiPlayer.coordinates);
-            obstacleCoordinates.add(aiPlayer.coordinates.cpy().add(dir.getDirectionVector()));
+            obstacleCoordinates.add(aiPlayer.destinationCoordinates);
+            GridPoint2 aiDestinationWithDirection = aiPlayer.destinationCoordinates.cpy().add(aiPlayerOrderedDirection.getDirectionVector());
+            obstacleCoordinates.add(aiDestinationWithDirection);
+            if (obstacleDestinationTies.containsKey(aiDestinationWithDirection)) {
+                obstacleDestinationTies.get(aiDestinationWithDirection).add(new ArrayList<>(Arrays.asList(i+1, idx+1)));
+            }
+            else {
+                obstacleDestinationTies.put(aiDestinationWithDirection, new ArrayList<>());
+                obstacleDestinationTies.get(aiDestinationWithDirection).add(new ArrayList<>(Arrays.asList(i+1, idx+1)));
+            }
             idx += 2;
+
+            if (aiPlayer.movementProgress < 0.75) {
+                obstacleCoordinates.add(aiPlayer.coordinates);
+                moveCommands.get(i+1).idxsToSkip.add(idx);
+                idx += 1;
+            }
+            
         }
         for (Obstacle obstacle: obstacles) {
             obstacleCoordinates.add(obstacle.coordinates);
+        }
+
+        for (ArrayList<ArrayList<Integer>> value : obstacleDestinationTies.values()) {
+            int winner = (new Random().nextInt(value.size()));
+            for (int i = 0; i < value.size(); i++) {
+                if (i == winner) {
+                    int command = value.get(i).get(0);
+                    int winner_idx = value.get(i).get(1);
+                    moveCommands.get(command).idxsToSkip.add(winner_idx);
+                }
+            }
         }
 
         return moveCommands;
@@ -179,27 +220,17 @@ public class GameDesktopLauncher implements ApplicationListener {
         batch.end();
     }
 
-    private void renderPlayer(MovableEntity player, DrawableMovable playerGraphics, MoveCommand moveCommand) {
-        // get time passed since the last render
-        float deltaTime = Gdx.graphics.getDeltaTime();
-        player.movementProgress = continueProgress(player.movementProgress, deltaTime, player.movementSpeed);
-        if (isEqual(player.movementProgress, 1f)) {
-            // record that the player has reached his/her destination
-            player.coordinates.set(player.destinationCoordinates);
-            moveCommand.execute();
-            player.updateDirection(kl.captureMovementKey());
-            healthBarSuppressor.update(kl.captureLKey());
-        }
+    private void renderPlayer(MovableEntity player, DrawableMovable playerGraphics) {
         // calculate interpolated player screen coordinates
         // tileMovement.moveRectangleBetweenTileCenters(playerGraphics.rectangle, player.coordinates, player.destinationCoordinates, player.movementProgress);
         playerGraphics.draw(batch, player, tileMovement);
     }
 
-    private void renderAIPlayers(ArrayList<MoveCommand> moveCommands) {
+    private void renderAIPlayers() {
         for (int i = 0; i < aiPlayers.size(); i++) {
             MovableEntity player = aiPlayers.get(i);
             DrawableMovable playerGraphics = aiPlayersGraphics.get(i);
-            renderPlayer(player, playerGraphics, moveCommands.get(i+1));
+            renderPlayer(player, playerGraphics);
         }
     }
 
@@ -212,16 +243,44 @@ public class GameDesktopLauncher implements ApplicationListener {
         }
     }
 
+    private void updatePlayer(MovableEntity player, MoveCommand moveCommand) {
+        float deltaTime = Gdx.graphics.getDeltaTime();
+        player.movementProgress = continueProgress(player.movementProgress, deltaTime, player.movementSpeed);
+        if (isEqual(player.movementProgress, 1f)) {
+            // record that the player has reached his/her destination
+
+            player.coordinates.set(player.destinationCoordinates);
+            moveCommand.execute();
+            player.updateDirection(moveCommand.direction); // kl.captureMovementKey()
+        }
+    }
+
+    private void updateAIPlayers(ArrayList<MoveCommand> moveCommands) {
+        for (int i = 0; i < aiPlayers.size(); i++) {
+            MovableEntity player = aiPlayers.get(i);
+            DrawableMovable playerGraphics = aiPlayersGraphics.get(i);
+            updatePlayer(player, moveCommands.get(i+1));
+        }
+    }
+
     @Override
     public void render() {
         ArrayList<MoveCommand> moveCommands = initiateMoving();
         startRendering();
 
+        healthBarSuppressor.update(kl.captureLKey());
+
+        // update player
+        updatePlayer(humanPlayer, moveCommands.get(0));
+
+        // update AU players
+        updateAIPlayers(moveCommands);
+
         // render player
-        renderPlayer(humanPlayer, humanPlayerGraphics, moveCommands.get(0));
+        renderPlayer(humanPlayer, humanPlayerGraphics);
 
         // render AI players
-        renderAIPlayers(moveCommands);
+        renderAIPlayers();
 
         // render obstacles
         renderObstacles();

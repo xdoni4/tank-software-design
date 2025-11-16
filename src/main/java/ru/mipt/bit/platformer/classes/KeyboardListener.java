@@ -29,4 +29,11 @@ public class KeyboardListener {
         }
         return 0;
     }
+
+    public int captureShootKey() {
+        if (Gdx.input.isKeyPressed(SPACE)) {
+            return 1;
+        }
+        return 0;
+    }
 }

@@ -251,7 +251,7 @@ public class GameDesktopLauncher implements ApplicationListener {
 
             player.coordinates.set(player.destinationCoordinates);
             moveCommand.execute();
-            player.updateDirection(moveCommand.direction); // kl.captureMovementKey()
+            player.updateDirection(moveCommand.direction);
         }
     }
 

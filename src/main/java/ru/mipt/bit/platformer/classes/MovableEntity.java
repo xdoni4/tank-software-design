@@ -12,7 +12,6 @@ import static ru.mipt.bit.platformer.util.GdxGameUtils.*;
 import ru.mipt.bit.platformer.classes.Direction;
 import ru.mipt.bit.platformer.classes.Positionable;
 import ru.mipt.bit.platformer.classes.Movable;
-import ru.mipt.bit.platformer.classes.Graphics;
 
 
 public class MovableEntity extends Positionable implements Movable {
@@ -21,6 +20,7 @@ public class MovableEntity extends Positionable implements Movable {
     public float rotation;
     public Direction direction;
     public float movementSpeed = 0f;
+    public boolean isMoving = true;
 
     public MovableEntity(int xCooordinate, int yCoordinate, float movementSpeed) {
         super(xCooordinate, yCoordinate);
@@ -28,11 +28,15 @@ public class MovableEntity extends Positionable implements Movable {
         // set initial position
         this.destinationCoordinates = new GridPoint2(this.coordinates);
         this.rotation = 0f;
-        this.direction = Direction.IDLE;
+        this.direction = Direction.RIGHT;
         this.movementSpeed = movementSpeed;
     }
 
     public void updateDirection(Direction dir) {
         this.direction = dir;
+    }
+
+    public void on_collision_do() {
+        return;
     }
 }

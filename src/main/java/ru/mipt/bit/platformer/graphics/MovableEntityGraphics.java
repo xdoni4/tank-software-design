@@ -1,4 +1,4 @@
-package ru.mipt.bit.platformer.classes;
+package ru.mipt.bit.platformer.graphics;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
@@ -11,8 +11,9 @@ import ru.mipt.bit.platformer.classes.Tank;
 import ru.mipt.bit.platformer.util.TileMovement;
 import ru.mipt.bit.platformer.classes.DrawableMovable;
 import com.badlogic.gdx.math.Vector2;
+import ru.mipt.bit.platformer.classes.MovableEntity;
 
-import ru.mipt.bit.platformer.classes.Graphics;
+import ru.mipt.bit.platformer.graphics.Graphics;
 
 
 public class MovableEntityGraphics extends Graphics implements DrawableMovable {

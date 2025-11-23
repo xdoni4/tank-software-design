@@ -18,10 +18,13 @@ public class Tank extends MovableEntity implements ShooterEntity {
     @Override
     public ShootableEntity shoot() {
         GridPoint2 destinationWithDirection = destinationCoordinates.cpy().add(direction.getDirectionVector());
+
         ShootableEntity projectile = new Bullet(
-            destinationWithDirection.x,
-            destinationWithDirection.y,
-            1.6f
+            destinationCoordinates.x,
+            destinationCoordinates.y,
+            direction,
+            10,
+            0.3f
         );
         return projectile;
     }

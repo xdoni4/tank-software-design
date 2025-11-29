@@ -20,12 +20,15 @@ public class Bullet extends ShootableEntity {
     public void onSelfCollidingInto() {
         exploded = true;
         isMoving = false;
-        coordinates.add(this.direction.getDirectionVector());
-        destinationCoordinates.add(this.direction.getDirectionVector());
+        if (!pointBlanc) {
+            coordinates.add(this.direction.getDirectionVector());
+            destinationCoordinates.add(this.direction.getDirectionVector());
+        }
     }
 
     public void onCollidingIntoSelf(MovableEntity collider) {
-        onSelfCollidingInto();
+        // onSelfCollidingInto();
+        return;
     }
 
     @Override

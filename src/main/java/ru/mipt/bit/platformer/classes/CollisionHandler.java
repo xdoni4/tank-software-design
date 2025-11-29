@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import ru.mipt.bit.platformer.classes.Direction;
 import ru.mipt.bit.platformer.classes.Positionable;
 import ru.mipt.bit.platformer.classes.MovableEntity;
+import ru.mipt.bit.platformer.classes.ShootableEntity;
 
 public class CollisionHandler {
     private ArrayList<Positionable> obstacles;
@@ -17,24 +18,35 @@ public class CollisionHandler {
 
     private boolean collidesWithObstacle(MovableEntity entity, Direction direction, Positionable obstacle) {
         boolean collision = false;
+        boolean pointBlanc = false;
+
         if (obstacle instanceof Obstacle) {
+            pointBlanc = obstacle.coordinates.equals(
+                entity.coordinates
+            );
             collision = obstacle.coordinates.equals(
                 entity.coordinates.cpy().add(direction.getDirectionVector())
-            );
+            ) || pointBlanc;
         }
         else if (obstacle instanceof MovableEntity) {
             MovableEntity movableObstacle = (MovableEntity) obstacle;
+            pointBlanc = movableObstacle.coordinates.equals(
+                entity.coordinates
+            );
             collision = movableObstacle.destinationCoordinates.equals(
                 entity.coordinates.cpy().add(direction.getDirectionVector())
             );
             if (movableObstacle.movementProgress < 0.75) {
-                collision = collision || movableObstacle.coordinates.cpy().add(movableObstacle.coordinates).equals(
+                collision = collision || movableObstacle.coordinates.equals(
                     entity.coordinates.cpy().add(direction.getDirectionVector())
-                );
+                ) || pointBlanc;
             }
             if (collision) {
                 movableObstacle.onCollidingIntoSelf(entity);
             }
+        }
+        if (entity instanceof ShootableEntity) {
+            ((ShootableEntity)entity).pointBlanc = pointBlanc;
         }
         
         return collision;

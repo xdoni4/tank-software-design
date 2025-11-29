@@ -209,7 +209,7 @@ public class GameDesktopLauncher implements ApplicationListener {
         
         
         for (Tank aiPlayer : aiPlayers.values()) {
-            Direction aiPlayerOrderedDirection = Direction.values()[(new Random()).nextInt(Direction.values().length-1)];
+            Direction aiPlayerOrderedDirection = Direction.values()[(new Random()).nextInt(Direction.values().length)];
             if (aiPlayerOrderedDirection == Direction.IDLE) {
                 aiPlayerOrderedDirection = aiPlayer.direction;
                 aiPlayer.isMoving = false;
@@ -348,6 +348,11 @@ public class GameDesktopLauncher implements ApplicationListener {
 
     private void executeCommands(ArrayList<Command> commands) {
         for (Command command : commands) {
+            if (command instanceof ShootCommand) {
+                command.execute();
+            }
+        }
+        for (Command command : commands) {
             float deltaTime = Gdx.graphics.getDeltaTime();
             if (command instanceof MoveCommand) {
                 MovableEntity entity = ((MoveCommand)command).entity;
@@ -357,9 +362,6 @@ public class GameDesktopLauncher implements ApplicationListener {
                     entity.coordinates.set(entity.destinationCoordinates);
                     command.execute();
                 }
-            }
-            else if (command instanceof ShootCommand) {
-                command.execute();
             }
         }
     }

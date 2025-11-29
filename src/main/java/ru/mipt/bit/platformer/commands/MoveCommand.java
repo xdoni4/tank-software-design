@@ -17,8 +17,6 @@ public class MoveCommand implements Command {
     public MovableEntity entity;
     public Direction direction;
     private CollisionHandler collisionHandler;
-    // private ArrayList<Positionable> obstacles;
-    // public ArrayList<Integer> idxsToSkip;
 
     public MoveCommand(
         MovableEntity entity,

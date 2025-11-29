@@ -22,8 +22,8 @@ public class Tank extends MovableEntity implements Shooter, HasHealth {
     public ShootableEntity shoot() {
         GridPoint2 destinationWithDirection = destinationCoordinates.cpy().add(direction.getDirectionVector());
         ShootableEntity projectile = new Bullet(
-            destinationCoordinates.x,
-            destinationCoordinates.y,
+            coordinates.x,
+            coordinates.y,
             direction,
             10,
             0.3f

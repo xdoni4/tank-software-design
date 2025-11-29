@@ -9,24 +9,24 @@ import com.badlogic.gdx.math.GridPoint2;
 
 import ru.mipt.bit.platformer.classes.Direction;
 import ru.mipt.bit.platformer.classes.ShootableEntity;
-import ru.mipt.bit.platformer.classes.ShooterEntity;
+import ru.mipt.bit.platformer.classes.Shooter;
 
 
 public class ShootCommand implements Command {
-    private ShooterEntity shooterEntity;
+    public Shooter entity;
     private HashMap<String, ShootableEntity> projectiles;
 
     public ShootCommand(
-        ShooterEntity shooterEntity,
+        Shooter entity,
         HashMap<String, ShootableEntity> projectiles
     ) {
-        this.shooterEntity = shooterEntity;
+        this.entity = entity;
         this.projectiles = projectiles;
     }
 
     @Override
     public void execute() {
-        ShootableEntity projectile = shooterEntity.shoot();
+        ShootableEntity projectile = entity.shoot();
         projectiles.put(UUID.randomUUID().toString(), projectile);
     }
 }

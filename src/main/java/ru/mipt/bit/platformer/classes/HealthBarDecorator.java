@@ -33,7 +33,7 @@ public class HealthBarDecorator implements DrawableMovable {
     }
 
     private void drawHealthBar(Batch batch) {
-        float healthPercent = (float) tank.currentHealth / tank.maxHealth;
+        float healthPercent = (float) tank.getHealth() / tank.getMaxHealth();
 
         float barWidth = decorated.graphics.getRegionWidth();
         float barHeight = 10f;

@@ -14,7 +14,7 @@ import ru.mipt.bit.platformer.classes.Positionable;
 import ru.mipt.bit.platformer.classes.Movable;
 
 
-public class MovableEntity extends Positionable implements Movable {
+public abstract class MovableEntity extends Positionable implements Movable {
     public GridPoint2 destinationCoordinates;
     public float movementProgress = 1f;
     public float rotation;
@@ -36,7 +36,11 @@ public class MovableEntity extends Positionable implements Movable {
         this.direction = dir;
     }
 
-    public void on_collision_do() {
+    public void onSelfCollidingInto() {
+        return;
+    }
+
+    public void onCollidingIntoSelf(MovableEntity collider) {
         return;
     }
 }

@@ -1,5 +1,6 @@
 package ru.mipt.bit.platformer;
 
+import java.util.UUID;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Random;
@@ -42,6 +43,7 @@ import ru.mipt.bit.platformer.commands.ShootCommand;
 
 import ru.mipt.bit.platformer.graphics.Graphics;
 import ru.mipt.bit.platformer.graphics.MovableEntityGraphics;
+import ru.mipt.bit.platformer.classes.CollisionHandler;
 
 
 import static com.badlogic.gdx.Input.Keys.*;
@@ -57,15 +59,15 @@ public class GameDesktopLauncher implements ApplicationListener {
     private TileMovement tileMovement;
     private MapLayout mapLayout;
 
-    private Tank humanPlayer;
-    private ArrayList<Obstacle> obstacles;
-    private ArrayList<Tank> aiPlayers;
+    private HashMap<String, Tank> humanPlayers;
+    private HashMap<String, Tank> aiPlayers;
+    private HashMap<String, Obstacle> obstacles;
     private HashMap<String, ShootableEntity> projectiles;
 
-    private DrawableMovable humanPlayerGraphics;
-    private ArrayList<DrawableMovable> aiPlayersGraphics;
+    private HashMap<String, DrawableMovable> humanPlayersGraphics;
+    private HashMap<String, DrawableMovable> aiPlayersGraphics;
     private HashMap<String, DrawableMovable> projectilesGraphics;
-    private ArrayList<Graphics> obstaclesGraphics;
+    private HashMap<String, Graphics> obstaclesGraphics;
 
     private ExecutionSuppressor healthBarSuppressor;
 
@@ -83,52 +85,81 @@ public class GameDesktopLauncher implements ApplicationListener {
         mapLayout = new MapLayout(groundLayer);
         // mapLayout = new MapLayout("mapLayout.txt");
 
+        humanPlayers = new HashMap<>();
+        aiPlayers = new HashMap<>();
+        obstacles = new HashMap<>();
         projectiles = new HashMap<>();
+
+
+        humanPlayersGraphics = new HashMap<>();
+        aiPlayersGraphics = new HashMap<>();
+        obstaclesGraphics = new HashMap<>();
         projectilesGraphics = new HashMap<>();
 
         kl = new KeyboardListener();
         healthBarSuppressor = new ExecutionSuppressor();
 
         GridPoint2 humanPlayerCoordinates = mapLayout.layout.get("Player").get(0);
-        humanPlayer = new Tank(humanPlayerCoordinates.x, humanPlayerCoordinates.y, 0.4f);
-
-        aiPlayers = new ArrayList<>();
-        for (GridPoint2 aiPlayersCoordinates : mapLayout.layout.get("AI")) {
-            aiPlayers.add(new Tank(aiPlayersCoordinates.x, aiPlayersCoordinates.y, 0.4f));
-        }
-
-        obstacles = new ArrayList<>();
-        for (GridPoint2 obstacleCoordinates : mapLayout.layout.get("Obstacles")) {
-            obstacles.add(new Tree(obstacleCoordinates.x, obstacleCoordinates.y));
-        }
-        humanPlayerGraphics = new HealthBarDecorator(
-            new MovableEntityGraphics("images/tank_blue.png"),
-            humanPlayer,
-            healthBarSuppressor
+        humanPlayers.put(
+            UUID.randomUUID().toString(),
+            new Tank(humanPlayerCoordinates.x, humanPlayerCoordinates.y, 0.4f)
         );
 
-        aiPlayersGraphics = new ArrayList<>();
-        for (int i = 0; i < aiPlayers.size(); i++) {
-            aiPlayersGraphics.add(
+        for (GridPoint2 aiPlayersCoordinates : mapLayout.layout.get("AI")) {
+            aiPlayers.put(
+                UUID.randomUUID().toString(),
+                new Tank(aiPlayersCoordinates.x, aiPlayersCoordinates.y, 0.4f)
+            );
+        }
+
+        for (GridPoint2 obstacleCoordinates : mapLayout.layout.get("Obstacles")) {
+            obstacles.put(
+                UUID.randomUUID().toString(),
+                new Tree(obstacleCoordinates.x, obstacleCoordinates.y)
+            );
+        }
+
+        for (String key : humanPlayers.keySet()) {
+            Tank humanPlayer = humanPlayers.get(key);
+            humanPlayersGraphics.put(
+                key,
                 new HealthBarDecorator(
-                    new MovableEntityGraphics("images/tank_safari_mesh.png"),
-                    aiPlayers.get(i),
+                    new MovableEntityGraphics("images/tank_blue.png"),
+                    humanPlayer,
                     healthBarSuppressor
                 )
             );
         }
-        obstaclesGraphics = new ArrayList<>(); 
-        for (int i = 0; i < obstacles.size(); i++) {
-            obstaclesGraphics.add(new Graphics("images/greenTree.png"));
+
+        for (String key : aiPlayers.keySet()) {
+            aiPlayersGraphics.put(
+                key,
+                new HealthBarDecorator(
+                    new MovableEntityGraphics("images/tank_safari_mesh.png"),
+                    aiPlayers.get(key),
+                    healthBarSuppressor
+                )
+            );
         }
 
-        for (int i = 0; i < obstacles.size(); i++) {
-            Obstacle obstacle = obstacles.get(i);
-            Graphics obstacleG = obstaclesGraphics.get(i);
+        for (String key : obstacles.keySet()) {
+            obstaclesGraphics.put(
+                key,
+                new Graphics("images/greenTree.png")
+            );
+        }
+
+        for (String key : obstacles.keySet()) {
+            Obstacle obstacle = obstacles.get(key);
+            Graphics obstacleG = obstaclesGraphics.get(key);
             moveRectangleAtTileCenter(groundLayer, obstacleG.rectangle, obstacle.coordinates);
         }
+
         for (GridPoint2 bordersCoordinates : mapLayout.layout.get("Borders")) {
-            obstacles.add(new Obstacle(bordersCoordinates.x, bordersCoordinates.y));
+            obstacles.put(
+                UUID.randomUUID().toString(),
+                new Obstacle(bordersCoordinates.x, bordersCoordinates.y)
+            );
         }
     }
 
@@ -139,120 +170,98 @@ public class GameDesktopLauncher implements ApplicationListener {
 
     private ArrayList<Command> initiateCommands() {
         ArrayList<Command> commands = new ArrayList<>();
-        ArrayList<GridPoint2> obstacleCoordinates = new ArrayList<>();
-        HashMap<GridPoint2, ArrayList<ArrayList<Integer>>> obstacleDestinationTies = new HashMap<>();
+        ArrayList<Positionable> allPositionables = new ArrayList<>();
         int idx = 0;
 
-        if (kl.captureShootKey() == 1) {
-            commands.add(
-                new ShootCommand(
-                    humanPlayer,
-                    projectiles
-                )
-            );
-        }
-        else {
-            Direction humanPlayerOrderedDirection = kl.captureMovementKey();
-            if (humanPlayerOrderedDirection == Direction.IDLE) {
-                humanPlayerOrderedDirection = humanPlayer.direction;
-                humanPlayer.isMoving = false;
+        for (Tank humanPlayer : humanPlayers.values()) {
+            if (kl.captureShootKey() == 1 && humanPlayer.shootCoolDown == 0) {
+                commands.add(
+                    new ShootCommand(
+                        humanPlayer,
+                        projectiles
+                    )
+                );
+                humanPlayer.shootCoolDown = humanPlayer.shootCoolDownMax;
             }
             else {
-                humanPlayer.isMoving = true;
-            }
-            commands.add(
-                new MoveCommand(
-                    humanPlayer,
-                    humanPlayerOrderedDirection,
-                    obstacleCoordinates,
-                    new ArrayList<>(Arrays.asList(idx))
-                )
-            );
-            obstacleCoordinates.add(humanPlayer.destinationCoordinates);
-            GridPoint2 destinationWithDirection = humanPlayer.destinationCoordinates.cpy().add(humanPlayerOrderedDirection.getDirectionVector());
-            obstacleCoordinates.add(destinationWithDirection);
-            if (obstacleDestinationTies.containsKey(destinationWithDirection)) {
-                obstacleDestinationTies.get(destinationWithDirection).add(new ArrayList<>(Arrays.asList(0, idx+1)));
-            }
-            else {
-                obstacleDestinationTies.put(destinationWithDirection, new ArrayList<>());
-                obstacleDestinationTies.get(destinationWithDirection).add(new ArrayList<>(Arrays.asList(0, idx+1)));
-            }
-            idx += 2;
-            if (humanPlayer.movementProgress < 0.75) {
-                obstacleCoordinates.add(humanPlayer.coordinates);
-                ((MoveCommand) commands.get(0)).idxsToSkip.add(idx);
-                idx += 1;
+                Direction humanPlayerOrderedDirection = kl.captureMovementKey();
+                if (humanPlayerOrderedDirection == Direction.IDLE) {
+                    humanPlayerOrderedDirection = humanPlayer.direction;
+                    humanPlayer.isMoving = false;
+                }
+                else {
+                    humanPlayer.isMoving = true;
+                }
+                commands.add(
+                    new MoveCommand(
+                        humanPlayer,
+                        humanPlayerOrderedDirection,
+                        new CollisionHandler(
+                            allPositionables,
+                            new ArrayList<>(Arrays.asList(idx))
+                        )
+                    )
+                );
+                allPositionables.add(humanPlayer);
+                idx++;
             }
         }
         
-        for (int i = 0; i < aiPlayers.size(); i++) {
-            Tank aiPlayer = aiPlayers.get(i);
+        
+        for (Tank aiPlayer : aiPlayers.values()) {
             Direction aiPlayerOrderedDirection = Direction.values()[(new Random()).nextInt(Direction.values().length-1)];
+            if (aiPlayerOrderedDirection == Direction.IDLE) {
+                aiPlayerOrderedDirection = aiPlayer.direction;
+                aiPlayer.isMoving = false;
+            }
+            else {
+                aiPlayer.isMoving = true;
+            }
+            
             aiPlayer.isMoving = true;
 
-            if ((new Random()).nextInt(5) > 3) {
+            if ((new Random()).nextInt(5) > 3 && aiPlayer.shootCoolDown == 0) {
                 commands.add(
                     new ShootCommand(
                         aiPlayer,
                         projectiles
                     )
                 );
+                aiPlayer.shootCoolDown = aiPlayer.shootCoolDownMax;
             }
             else {
                 commands.add(
                     new MoveCommand(
                         aiPlayer,
                         aiPlayerOrderedDirection,
-                        obstacleCoordinates,
-                        new ArrayList<>(Arrays.asList(idx))
+                        new CollisionHandler(
+                            allPositionables,
+                            new ArrayList<>(Arrays.asList(idx))
+                        )
                     )
                 );
-                obstacleCoordinates.add(aiPlayer.destinationCoordinates);
-                GridPoint2 aiDestinationWithDirection = aiPlayer.destinationCoordinates.cpy().add(aiPlayerOrderedDirection.getDirectionVector());
-                obstacleCoordinates.add(aiDestinationWithDirection);
-                if (obstacleDestinationTies.containsKey(aiDestinationWithDirection)) {
-                    obstacleDestinationTies.get(aiDestinationWithDirection).add(new ArrayList<>(Arrays.asList(i+1, idx+1)));
-                }
-                else {
-                    obstacleDestinationTies.put(aiDestinationWithDirection, new ArrayList<>());
-                    obstacleDestinationTies.get(aiDestinationWithDirection).add(new ArrayList<>(Arrays.asList(i+1, idx+1)));
-                }
-                idx += 2;
-
-                if (aiPlayer.movementProgress < 0.75) {
-                    obstacleCoordinates.add(aiPlayer.coordinates);
-                    ((MoveCommand) commands.get(i+1)).idxsToSkip.add(idx);
-                    idx += 1;
-                }
+                allPositionables.add(aiPlayer);
+                idx++;
             }
         }
+
         for (ShootableEntity projectile : projectiles.values()) {
-            obstacleCoordinates.add(((MovableEntity) projectile).coordinates);
+            allPositionables.add(projectile);
             commands.add(
                 new MoveCommand(
                     (MovableEntity)projectile,
-                    ((MovableEntity)projectile).direction,
-                    obstacleCoordinates,
-                    new ArrayList<>(Arrays.asList(idx))
+                    ((Bullet)projectile).direction,
+                    new CollisionHandler(
+                        allPositionables,
+                        new ArrayList<>(Arrays.asList(idx))
+                    )
                 )
             );
-            idx += 1;
+            idx++;
         }
 
-        for (Obstacle obstacle: obstacles) {
-            obstacleCoordinates.add(obstacle.coordinates);
-        }
-
-        for (ArrayList<ArrayList<Integer>> value : obstacleDestinationTies.values()) {
-            int winner = (new Random().nextInt(value.size()));
-            for (int i = 0; i < value.size(); i++) {
-                if (i == winner) {
-                    int command = value.get(i).get(0);
-                    int winner_idx = value.get(i).get(1);
-                    ((MoveCommand) commands.get(command)).idxsToSkip.add(winner_idx);
-                }
-            }
+        for (Obstacle obstacle : obstacles.values()) {
+            allPositionables.add(obstacle);
         }
 
         return commands;
@@ -276,55 +285,47 @@ public class GameDesktopLauncher implements ApplicationListener {
 
     private void renderPlayer(MovableEntity player, DrawableMovable playerGraphics) {
         // calculate interpolated player screen coordinates
-        // tileMovement.moveRectangleBetweenTileCenters(playerGraphics.rectangle, player.coordinates, player.destinationCoordinates, player.movementProgress);
         playerGraphics.draw(batch, player, tileMovement);
     }
 
-    private void renderAIPlayers() {
-        for (int i = 0; i < aiPlayers.size(); i++) {
-            MovableEntity player = aiPlayers.get(i);
-            DrawableMovable playerGraphics = aiPlayersGraphics.get(i);
+    private void renderPlayers(HashMap<String, Tank> players, HashMap<String, DrawableMovable> playersGraphics) {
+        for (String key : players.keySet()) {
+            MovableEntity player = (MovableEntity) players.get(key);
+            DrawableMovable playerGraphics = playersGraphics.get(key);
             renderPlayer(player, playerGraphics);
         }
     }
 
-    private void renderObstacles() {
-         if (obstaclesGraphics != null) {
-            for (int i = 0; i < obstaclesGraphics.size(); i++) {
-                Graphics obstacleG = obstaclesGraphics.get(i);
-                obstacleG.draw(batch, 0f);
-            }
+    private void renderObstacles(HashMap<String, Graphics> obstaclesGraphics) {
+        for (Graphics obstacleG : obstaclesGraphics.values()) {
+            obstacleG.draw(batch, 0f);
         }
     }
 
-    private void renderProjectiles() {
+    private void renderProjectiles(HashMap<String, ShootableEntity> projectiles, HashMap<String, DrawableMovable> projectilesGraphics) {
         for (String key : projectilesGraphics.keySet()) {
             DrawableMovable projectileGraphics = projectilesGraphics.get(key);
             ShootableEntity projectile = projectiles.get(key);
-            projectileGraphics.draw(batch, (MovableEntity) projectile, tileMovement);
+            projectileGraphics.draw(batch, projectile, tileMovement);
         }
     }
 
-    private void updatePlayer(MovableEntity player, Command command) {
-        float deltaTime = Gdx.graphics.getDeltaTime();
-        player.movementProgress = continueProgress(player.movementProgress, deltaTime, player.movementSpeed);
-        if (isEqual(player.movementProgress, 1f)) {
-            // record that the player has reached his/her destination
+    private void updatePlayers(HashMap<String, Tank> players) {
+        ArrayList<String> keysToRemove = new ArrayList<>();
 
-            player.coordinates.set(player.destinationCoordinates);
-            command.execute();
+        for (String key : players.keySet()) {
+            Tank player = players.get(key);
+            if (player.getHealth() == 0) {
+                keysToRemove.add(key);
+            }
         }
+
+        players.keySet().removeAll(keysToRemove);
     }
 
-    private void updateAIPlayers(ArrayList<Command> commands) {
-        for (int i = 0; i < aiPlayers.size(); i++) {
-            MovableEntity player = aiPlayers.get(i);
-            DrawableMovable playerGraphics = aiPlayersGraphics.get(i);
-            updatePlayer(player, commands.get(i+1));
-        }
-    }
+    private void updateProjectiles(HashMap<String, ShootableEntity> projectiles) {
+        ArrayList<String> keysToRemove = new ArrayList<>();
 
-    private void updateProjectiles() {
         for (String key : projectiles.keySet()) {
             float deltaTime = Gdx.graphics.getDeltaTime();
             ShootableEntity projectile = projectiles.get(key);
@@ -336,15 +337,44 @@ public class GameDesktopLauncher implements ApplicationListener {
                 MovableEntityGraphics projectileGraphics = (MovableEntityGraphics) projectilesGraphics.get(key);
                 projectileGraphics.texture = new Texture("images/explosion.png");
                 projectileGraphics.graphics = new TextureRegion(projectileGraphics.texture);
-            }
-            else {
-                if (isEqual(((Bullet)projectile).movementProgress, 1f)) {
-                    ((Bullet)projectile).coordinates.set(((Bullet)projectile).destinationCoordinates);
-                    ((Bullet)projectile).destinationCoordinates.add(((Bullet)projectile).direction.getDirectionVector());
-                    ((Bullet)projectile).movementProgress = 0f;
+                if (((Bullet)projectile).explosionLifetime == ((Bullet)projectile).explosionLifetimeMax) {
+                    keysToRemove.add(key);
                 }
             }
         }
+        projectiles.keySet().removeAll(keysToRemove);
+        projectilesGraphics.keySet().removeAll(keysToRemove);
+    }
+
+    private void executeCommands(ArrayList<Command> commands) {
+        for (Command command : commands) {
+            float deltaTime = Gdx.graphics.getDeltaTime();
+            if (command instanceof MoveCommand) {
+                MovableEntity entity = ((MoveCommand)command).entity;
+                entity.movementProgress = continueProgress(entity.movementProgress, deltaTime, entity.movementSpeed);
+                if (isEqual(entity.movementProgress, 1f)) {
+                    // record that the player has reached his/her destination
+                    entity.coordinates.set(entity.destinationCoordinates);
+                    command.execute();
+                }
+            }
+            else if (command instanceof ShootCommand) {
+                command.execute();
+            }
+        }
+    }
+
+    private void tick() {
+        for (Tank player : humanPlayers.values()) {
+            player.tick();
+        }
+        for (Tank aiPlayer : aiPlayers.values()) {
+            aiPlayer.tick();
+        }
+        for (ShootableEntity projectile : projectiles.values()) {
+            ((Bullet)projectile).tick();
+        }
+        healthBarSuppressor.tick();
     }
 
     @Override
@@ -352,30 +382,37 @@ public class GameDesktopLauncher implements ApplicationListener {
         ArrayList<Command> commands = initiateCommands();
         startRendering();
 
-        healthBarSuppressor.update(kl.captureLKey());
+        if (healthBarSuppressor.updateCoolDown == 0) {
+            healthBarSuppressor.update(kl.captureLKey());
+            healthBarSuppressor.updateCoolDown = healthBarSuppressor.updateCoolDownMax;
+        }
 
-        // update player
-        updatePlayer(humanPlayer, commands.get(0));
+        // update human players
+        updatePlayers(humanPlayers);
 
         // update AI players
-        updateAIPlayers(commands);
+        updatePlayers(aiPlayers);
 
         // update projectiles
-        updateProjectiles();
+        updateProjectiles(projectiles);
 
-        // render player
-        renderPlayer(humanPlayer, humanPlayerGraphics);
+        executeCommands(commands);
+
+        // render human players
+        renderPlayers(humanPlayers, humanPlayersGraphics);
 
         // render AI players
-        renderAIPlayers();
+        renderPlayers(aiPlayers, aiPlayersGraphics);
 
         // render obstacles
-        renderObstacles();
+        renderObstacles(obstaclesGraphics);
 
         // render projectiles
-        renderProjectiles();
+        renderProjectiles(projectiles, projectilesGraphics);
 
         finishRendering();
+
+        tick();
     }
 
     @Override

@@ -8,6 +8,9 @@ import ru.mipt.bit.platformer.classes.ShootableEntity;
 import ru.mipt.bit.platformer.classes.Bullet;
 import ru.mipt.bit.platformer.classes.HasHealth;
 
+import com.badlogic.gdx.Gdx;
+import static ru.mipt.bit.platformer.util.GdxGameUtils.*;
+
 public class Tank extends MovableEntity implements Shooter, HasHealth {
     private float currentHealth = 100;
     private float maxHealth = 100;
@@ -26,7 +29,7 @@ public class Tank extends MovableEntity implements Shooter, HasHealth {
             coordinates.y,
             direction,
             10,
-            0.3f
+            0.15f
         );
         return projectile;
     }
@@ -56,6 +59,11 @@ public class Tank extends MovableEntity implements Shooter, HasHealth {
 
     @Override
     public void tick() {
+        float deltaTime = Gdx.graphics.getDeltaTime();
+        if (isMoving) {
+            movementProgress = continueProgress(movementProgress, deltaTime, movementSpeed);
+        }
+
         if (shootCoolDown > 0) {
             shootCoolDown--;
         }

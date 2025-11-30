@@ -3,6 +3,9 @@ package ru.mipt.bit.platformer.classes;
 import ru.mipt.bit.platformer.classes.Shootable;
 import ru.mipt.bit.platformer.classes.ShootableEntity;
 
+import com.badlogic.gdx.Gdx;
+import static ru.mipt.bit.platformer.util.GdxGameUtils.*;
+
 public class Bullet extends ShootableEntity {
     public boolean exploded = false;
     public int explosionLifetimeMax = 25;
@@ -33,6 +36,11 @@ public class Bullet extends ShootableEntity {
 
     @Override
     public void tick() {
+        float deltaTime = Gdx.graphics.getDeltaTime();
+        if (isMoving) {
+            movementProgress = continueProgress(movementProgress, deltaTime, movementSpeed);
+        }
+
         if (exploded) {
             if (explosionLifetime >= explosionLifetimeMax) {
                 explosionLifetime = 0;

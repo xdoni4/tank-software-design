@@ -20,11 +20,9 @@ public class ShootCommand implements Command {
 
     public ShootCommand(
         Shooter entity,
-        // HashMap<String, ShootableEntity> projectiles
         Level level
     ) {
         this.entity = entity;
-        // this.projectiles = projectiles;
         this.level = level;
     }
 

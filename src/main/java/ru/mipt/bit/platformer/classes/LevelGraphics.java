@@ -24,7 +24,6 @@ import static ru.mipt.bit.platformer.util.GdxGameUtils.*;
 import ru.mipt.bit.platformer.classes.Observer;
 
 import ru.mipt.bit.platformer.graphics.Graphics;
-import ru.mipt.bit.platformer.classes.ExecutionSuppressor;
 import ru.mipt.bit.platformer.graphics.MovableEntityGraphics;
 
 public class LevelGraphics implements Observer {
@@ -48,7 +47,7 @@ public class LevelGraphics implements Observer {
         groundLayer = level.groundLayer;
         tileMovement = level.tileMovement;
 
-        healthBarSuppressor = new ExecutionSuppressor();
+        healthBarSuppressor = level.healthBarSuppressor;
 
 
         humanPlayersGraphics = new HashMap<>();
@@ -56,41 +55,41 @@ public class LevelGraphics implements Observer {
         obstaclesGraphics = new HashMap<>();
         projectilesGraphics = new HashMap<>();
 
-        // for (String key : humanPlayers.keySet()) {
-        //     Tank humanPlayer = humanPlayers.get(key);
-        //     humanPlayersGraphics.put(
-        //         key,
-        //         new HealthBarDecorator(
-        //             new MovableEntityGraphics("images/tank_blue.png"),
-        //             humanPlayer,
-        //             healthBarSuppressor
-        //         )
-        //     );
-        // }
+        for (String key : level.humanPlayers.keySet()) {
+            Tank humanPlayer = level.humanPlayers.get(key);
+            humanPlayersGraphics.put(
+                key,
+                new HealthBarDecorator(
+                    new MovableEntityGraphics("images/tank_blue.png"),
+                    humanPlayer,
+                    healthBarSuppressor
+                )
+            );
+        }
 
-        // for (String key : aiPlayers.keySet()) {
-        //     aiPlayersGraphics.put(
-        //         key,
-        //         new HealthBarDecorator(
-        //             new MovableEntityGraphics("images/tank_safari_mesh.png"),
-        //             aiPlayers.get(key),
-        //             healthBarSuppressor
-        //         )
-        //     );
-        // }
+        for (String key : level.aiPlayers.keySet()) {
+            aiPlayersGraphics.put(
+                key,
+                new HealthBarDecorator(
+                    new MovableEntityGraphics("images/tank_safari_mesh.png"),
+                    level.aiPlayers.get(key),
+                    healthBarSuppressor
+                )
+            );
+        }
 
-        // for (String key : obstacles.keySet()) {
-        //     obstaclesGraphics.put(
-        //         key,
-        //         new Graphics("images/greenTree.png")
-        //     );
-        // }
+        for (String key : level.obstacles.keySet()) {
+            obstaclesGraphics.put(
+                key,
+                new Graphics("images/greenTree.png")
+            );
+        }
 
-        // for (String key : obstacles.keySet()) {
-        //     Obstacle obstacle = obstacles.get(key);
-        //     Graphics obstacleG = obstaclesGraphics.get(key);
-        //     moveRectangleAtTileCenter(groundLayer, obstacleG.rectangle, obstacle.coordinates);
-        // }
+        for (String key : level.obstacles.keySet()) {
+            Obstacle obstacle = level.obstacles.get(key);
+            Graphics obstacleG = obstaclesGraphics.get(key);
+            moveRectangleAtTileCenter(groundLayer, obstacleG.rectangle, obstacle.coordinates);
+        }
     }
 
     private void glClearScreen() {
@@ -217,11 +216,11 @@ public class LevelGraphics implements Observer {
         // render AI players
         renderPlayers(level.aiPlayers, aiPlayersGraphics);
 
-        // render projectiles
-        renderProjectiles(level.projectiles, projectilesGraphics);
-
         // render obstacles
         renderObstacles(obstaclesGraphics);
+
+        // render projectiles
+        renderProjectiles(level.projectiles, projectilesGraphics);
 
         finishRendering();
     }

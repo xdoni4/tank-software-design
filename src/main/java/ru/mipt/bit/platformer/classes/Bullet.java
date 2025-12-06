@@ -22,7 +22,7 @@ public class Bullet extends ShootableEntity {
 
     public void onSelfCollidingInto() {
         exploded = true;
-        isMoving = false;
+        isMoving = true;
         if (!pointBlanc) {
             coordinates.add(this.direction.getDirectionVector());
             destinationCoordinates.add(this.direction.getDirectionVector());

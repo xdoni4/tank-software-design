@@ -55,7 +55,7 @@ public class Level extends GameObject implements Observable {
     public HashMap<String, Obstacle> obstacles;
     public HashMap<String, ShootableEntity> projectiles;
 
-    private ExecutionSuppressor healthBarSuppressor;
+    public ExecutionSuppressor healthBarSuppressor;
 
     private KeyboardListener kl;
 
@@ -82,6 +82,7 @@ public class Level extends GameObject implements Observable {
         tileMovement = new TileMovement(groundLayer, Interpolation.smooth);
         mapLayout = new MapLayout(groundLayer);
         // mapLayout = new MapLayout("mapLayout.txt");
+        healthBarSuppressor = new ExecutionSuppressor();
         
         LevelData addedData = new LevelData();
 
@@ -256,13 +257,12 @@ public class Level extends GameObject implements Observable {
         for (String key : aiPlayers.keySet()) {
             Tank player = aiPlayers.get(key);
             if (player.getHealth() == 0) {
-                // keysToRemove.add(key);
+                keysToRemove.add(key);
                 dataUpdate.get("remove").aiPlayers.put(key, player);
             }
         }
 
         aiPlayers.keySet().removeAll(keysToRemove);
-        // dataUpdate.get("remove").aiPlayers.addAll(keysToRemove);
     }
 
     private void updateHumanPlayers() {
@@ -277,7 +277,6 @@ public class Level extends GameObject implements Observable {
         }
 
         humanPlayers.keySet().removeAll(keysToRemove);
-        // dataUpdate.get("remove").humanPlayers.addAll(keysToRemove);
     }
 
     private void updateProjectiles() {
@@ -287,13 +286,8 @@ public class Level extends GameObject implements Observable {
         for (String key : projectiles.keySet()) {
             ShootableEntity projectile = projectiles.get(key);
             if (((Bullet)projectile).exploded) {
-                
-                // MovableEntityGraphics projectileGraphics = (MovableEntityGraphics) projectilesGraphics.get(key);
-                // projectileGraphics.texture = new Texture("images/explosion.png");
-                // projectileGraphics.graphics = new TextureRegion(projectileGraphics.texture);
                 if (((Bullet)projectile).explosionLifetime == 0) {
-                    // keysToUpdate.add(key);
-                     dataUpdate.get("update").projectiles.put(key, projectile);
+                    dataUpdate.get("update").projectiles.put(key, projectile);
                 }
                 else if (((Bullet)projectile).explosionLifetime == ((Bullet)projectile).explosionLifetimeMax) {
                     keysToRemove.add(key);
@@ -302,8 +296,6 @@ public class Level extends GameObject implements Observable {
             }
         }
         projectiles.keySet().removeAll(keysToRemove);
-        // dataUpdate.get("remove").projectiles.addAll(keysToRemove);
-        // dataUpdate.get("update").projectiles.addAll(keysToUpdate);
     }
 
     private void executeCommands(ArrayList<Command> commands) {

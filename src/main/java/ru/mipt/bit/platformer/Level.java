@@ -1,4 +1,4 @@
-package ru.mipt.bit.platformer.classes;
+package ru.mipt.bit.platformer;
 
 import java.util.UUID;
 import java.util.Arrays;
@@ -6,26 +6,12 @@ import java.util.ArrayList;
 import java.util.Random;
 import java.util.HashMap;
 
-import ru.mipt.bit.platformer.classes.GameObject;
+import ru.mipt.bit.platformer.GameObject;
 
 import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.Rectangle;
 import ru.mipt.bit.platformer.util.TileMovement;
-import ru.mipt.bit.platformer.classes.MovableEntity;
-import ru.mipt.bit.platformer.classes.Direction;
-import ru.mipt.bit.platformer.classes.Obstacle;
-import ru.mipt.bit.platformer.classes.Tree;
-import ru.mipt.bit.platformer.classes.Tank;
-import ru.mipt.bit.platformer.classes.Positionable;
-import ru.mipt.bit.platformer.classes.MapLayout;
-import ru.mipt.bit.platformer.classes.KeyboardListener;
-import ru.mipt.bit.platformer.classes.Drawable;
-import ru.mipt.bit.platformer.classes.DrawableMovable;
-import ru.mipt.bit.platformer.classes.HealthBarDecorator;
-import ru.mipt.bit.platformer.classes.ShootableEntity;
-import ru.mipt.bit.platformer.classes.Bullet;
-import ru.mipt.bit.platformer.classes.LevelData;
 
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
@@ -39,9 +25,8 @@ import ru.mipt.bit.platformer.commands.Command;
 import ru.mipt.bit.platformer.commands.MoveCommand;
 import ru.mipt.bit.platformer.commands.ShootCommand;
 
-import ru.mipt.bit.platformer.classes.CollisionHandler;
-import ru.mipt.bit.platformer.classes.Observable;
-import ru.mipt.bit.platformer.classes.Observer;
+import ru.mipt.bit.platformer.keyboard.KeyboardListener;
+
 
 public class Level extends GameObject implements Observable {
     public TiledMapTileLayer groundLayer;

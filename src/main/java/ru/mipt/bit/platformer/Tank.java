@@ -1,12 +1,7 @@
-package ru.mipt.bit.platformer.classes;
+package ru.mipt.bit.platformer;
 
 import com.badlogic.gdx.math.GridPoint2;
 
-import ru.mipt.bit.platformer.classes.MovableEntity;
-import ru.mipt.bit.platformer.classes.Shooter;
-import ru.mipt.bit.platformer.classes.ShootableEntity;
-import ru.mipt.bit.platformer.classes.Bullet;
-import ru.mipt.bit.platformer.classes.HasHealth;
 
 import com.badlogic.gdx.Gdx;
 import static ru.mipt.bit.platformer.util.GdxGameUtils.*;

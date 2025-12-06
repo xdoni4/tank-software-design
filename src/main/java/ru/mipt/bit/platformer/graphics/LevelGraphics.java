@@ -1,4 +1,4 @@
-package ru.mipt.bit.platformer.classes;
+package ru.mipt.bit.platformer.graphics;
 
 import java.util.UUID;
 import java.util.Arrays;
@@ -17,14 +17,20 @@ import com.badlogic.gdx.maps.MapRenderer;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
-import ru.mipt.bit.platformer.classes.LevelData;
+import ru.mipt.bit.platformer.LevelData;
 import ru.mipt.bit.platformer.util.TileMovement;
 import static ru.mipt.bit.platformer.util.GdxGameUtils.*;
 
-import ru.mipt.bit.platformer.classes.Observer;
+import ru.mipt.bit.platformer.MovableEntity;
+import ru.mipt.bit.platformer.Obstacle;
+import ru.mipt.bit.platformer.Tank;
+import ru.mipt.bit.platformer.DrawableMovable;
+import ru.mipt.bit.platformer.ShootableEntity;
+import ru.mipt.bit.platformer.Level;
+import ru.mipt.bit.platformer.ExecutionSuppressor;
 
-import ru.mipt.bit.platformer.graphics.Graphics;
-import ru.mipt.bit.platformer.graphics.MovableEntityGraphics;
+import ru.mipt.bit.platformer.Observer;
+
 
 public class LevelGraphics implements Observer {
     private Batch batch;

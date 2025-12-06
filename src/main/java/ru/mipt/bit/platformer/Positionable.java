@@ -1,8 +1,7 @@
-package ru.mipt.bit.platformer.classes;
+package ru.mipt.bit.platformer;
 
 import com.badlogic.gdx.math.GridPoint2;
 
-import ru.mipt.bit.platformer.classes.GameObject;
 
 public abstract class Positionable extends GameObject {
     public GridPoint2 coordinates;

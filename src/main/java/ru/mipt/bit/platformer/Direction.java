@@ -1,4 +1,4 @@
-package ru.mipt.bit.platformer.classes;
+package ru.mipt.bit.platformer;
 
 import com.badlogic.gdx.Gdx;
 import static com.badlogic.gdx.Input.Keys.*;

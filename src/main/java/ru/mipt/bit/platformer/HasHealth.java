@@ -1,4 +1,4 @@
-package ru.mipt.bit.platformer.classes;
+package ru.mipt.bit.platformer;
 
 public interface HasHealth {
     public float getHealth();

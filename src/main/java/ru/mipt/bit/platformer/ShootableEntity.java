@@ -1,6 +1,5 @@
-package ru.mipt.bit.platformer.classes;
+package ru.mipt.bit.platformer;
 
-import ru.mipt.bit.platformer.classes.MovableEntity;
 
 public abstract class ShootableEntity extends MovableEntity implements Shootable {
     public float damage = 10;

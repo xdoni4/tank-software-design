@@ -7,13 +7,11 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.math.GridPoint2;
 import static ru.mipt.bit.platformer.util.GdxGameUtils.createBoundingRectangle;
-import ru.mipt.bit.platformer.classes.Tank;
+import ru.mipt.bit.platformer.Tank;
 import ru.mipt.bit.platformer.util.TileMovement;
-import ru.mipt.bit.platformer.classes.DrawableMovable;
+import ru.mipt.bit.platformer.DrawableMovable;
 import com.badlogic.gdx.math.Vector2;
-import ru.mipt.bit.platformer.classes.MovableEntity;
-
-import ru.mipt.bit.platformer.graphics.Graphics;
+import ru.mipt.bit.platformer.MovableEntity;
 
 
 public class MovableEntityGraphics extends Graphics implements DrawableMovable {

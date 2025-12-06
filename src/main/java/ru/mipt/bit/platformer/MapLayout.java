@@ -1,4 +1,4 @@
-package ru.mipt.bit.platformer.classes;
+package ru.mipt.bit.platformer;
 
 import java.util.Set;
 import java.util.List;

@@ -1,8 +1,6 @@
-package ru.mipt.bit.platformer.classes;
+package ru.mipt.bit.platformer;
 
 import java.util.ArrayList;
-import ru.mipt.bit.platformer.classes.Positionable;
-import ru.mipt.bit.platformer.classes.MovableEntity;
 
 public interface Movable {
     public void updateDirection(Direction dir);

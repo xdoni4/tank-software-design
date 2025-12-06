@@ -1,16 +1,14 @@
-package ru.mipt.bit.platformer.classes;
+package ru.mipt.bit.platformer.graphics;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Batch;
 
-import ru.mipt.bit.platformer.classes.GameAssets;
-import ru.mipt.bit.platformer.classes.DrawableMovable;
-import ru.mipt.bit.platformer.classes.MovableEntity;
+import ru.mipt.bit.platformer.GameAssets;
+import ru.mipt.bit.platformer.DrawableMovable;
+import ru.mipt.bit.platformer.MovableEntity;
 import ru.mipt.bit.platformer.util.TileMovement;
-import ru.mipt.bit.platformer.classes.ExecutionSuppressor;
-
-import ru.mipt.bit.platformer.graphics.MovableEntityGraphics;
-
+import ru.mipt.bit.platformer.ExecutionSuppressor;
+import ru.mipt.bit.platformer.Tank;
 
 
 public class HealthBarDecorator implements DrawableMovable {

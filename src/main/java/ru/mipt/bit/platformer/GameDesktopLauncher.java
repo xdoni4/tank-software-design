@@ -4,8 +4,7 @@ import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
 
-import ru.mipt.bit.platformer.classes.Level;
-import ru.mipt.bit.platformer.classes.LevelGraphics;
+import ru.mipt.bit.platformer.graphics.LevelGraphics;
 
 
 public class GameDesktopLauncher implements ApplicationListener {

@@ -1,16 +1,15 @@
 package ru.mipt.bit.platformer.commands;
-import ru.mipt.bit.platformer.commands.Command;
 
 
 import java.util.ArrayList;
 import com.badlogic.gdx.math.GridPoint2;
 
-import ru.mipt.bit.platformer.classes.Direction;
-import ru.mipt.bit.platformer.classes.Positionable;
-import ru.mipt.bit.platformer.classes.MovableEntity;
-import ru.mipt.bit.platformer.classes.Bullet;
-import ru.mipt.bit.platformer.classes.Obstacle;
-import ru.mipt.bit.platformer.classes.CollisionHandler;
+import ru.mipt.bit.platformer.Direction;
+import ru.mipt.bit.platformer.Positionable;
+import ru.mipt.bit.platformer.MovableEntity;
+import ru.mipt.bit.platformer.Bullet;
+import ru.mipt.bit.platformer.Obstacle;
+import ru.mipt.bit.platformer.CollisionHandler;
 
 
 public class MoveCommand implements Command {

@@ -1,10 +1,7 @@
-package ru.mipt.bit.platformer.classes;
+package ru.mipt.bit.platformer;
 
 import java.util.HashMap;
 
-import ru.mipt.bit.platformer.classes.Tank;
-import ru.mipt.bit.platformer.classes.Obstacle;
-import ru.mipt.bit.platformer.classes.ShootableEntity;
 
 public class LevelData {
     public HashMap<String, Tank> humanPlayers;

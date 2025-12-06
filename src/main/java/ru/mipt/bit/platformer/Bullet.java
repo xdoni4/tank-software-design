@@ -1,7 +1,4 @@
-package ru.mipt.bit.platformer.classes;
-
-import ru.mipt.bit.platformer.classes.Shootable;
-import ru.mipt.bit.platformer.classes.ShootableEntity;
+package ru.mipt.bit.platformer;
 
 import com.badlogic.gdx.Gdx;
 import static ru.mipt.bit.platformer.util.GdxGameUtils.*;

@@ -1,11 +1,7 @@
-package ru.mipt.bit.platformer.classes;
+package ru.mipt.bit.platformer;
 
 import java.util.ArrayList;
 
-import ru.mipt.bit.platformer.classes.Direction;
-import ru.mipt.bit.platformer.classes.Positionable;
-import ru.mipt.bit.platformer.classes.MovableEntity;
-import ru.mipt.bit.platformer.classes.ShootableEntity;
 
 public class CollisionHandler {
     private ArrayList<Positionable> obstacles;

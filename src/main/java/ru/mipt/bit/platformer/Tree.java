@@ -1,5 +1,4 @@
-package ru.mipt.bit.platformer.classes;
-import ru.mipt.bit.platformer.classes.Positionable;
+package ru.mipt.bit.platformer;
 
 
 public class Tree extends Obstacle {

@@ -1,6 +1,5 @@
-package ru.mipt.bit.platformer.classes;
+package ru.mipt.bit.platformer;
 
-import ru.mipt.bit.platformer.classes.GameObject;
 
 public class ExecutionSuppressor extends GameObject {
     public int suppressed = 1;

@@ -7,9 +7,9 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.math.GridPoint2;
 import static ru.mipt.bit.platformer.util.GdxGameUtils.createBoundingRectangle;
-import ru.mipt.bit.platformer.classes.Tank;
+import ru.mipt.bit.platformer.Tank;
 import ru.mipt.bit.platformer.util.TileMovement;
-import ru.mipt.bit.platformer.classes.Drawable;
+import ru.mipt.bit.platformer.Drawable;
 import com.badlogic.gdx.math.Vector2;
 
 

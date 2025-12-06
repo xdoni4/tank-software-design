@@ -1,9 +1,9 @@
-package ru.mipt.bit.platformer.classes;
+package ru.mipt.bit.platformer.keyboard;
 
 import com.badlogic.gdx.Gdx;
 import static com.badlogic.gdx.Input.Keys.*;
 
-import ru.mipt.bit.platformer.classes.Direction;
+import ru.mipt.bit.platformer.Direction;
 
 public class KeyboardListener {
     public Direction captureMovementKey() {

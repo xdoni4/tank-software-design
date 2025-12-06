@@ -30,8 +30,13 @@ import ru.mipt.bit.platformer.Level;
 import ru.mipt.bit.platformer.ExecutionSuppressor;
 
 import ru.mipt.bit.platformer.Observer;
+import ru.mipt.bit.platformer.GameProperties;
 
+import org.springframework.stereotype.Component;
+import org.springframework.context.annotation.Scope;
 
+@Component
+@Scope("prototype")
 public class LevelGraphics implements Observer {
     private Batch batch;
 
@@ -46,21 +51,21 @@ public class LevelGraphics implements Observer {
     private HashMap<String, Graphics> obstaclesGraphics;
 
     private ExecutionSuppressor healthBarSuppressor;
+    
+    public LevelGraphics() {
+        humanPlayersGraphics = new HashMap<>();
+        aiPlayersGraphics = new HashMap<>();
+        obstaclesGraphics = new HashMap<>();
+        projectilesGraphics = new HashMap<>();
+    }
 
-    public LevelGraphics(Level level) {
+    public void initialize(Level level) {
         batch = new SpriteBatch();
         levelRenderer = createSingleLayerMapRenderer(level.level, batch);
         groundLayer = level.groundLayer;
         tileMovement = level.tileMovement;
 
         healthBarSuppressor = level.healthBarSuppressor;
-
-
-        humanPlayersGraphics = new HashMap<>();
-        aiPlayersGraphics = new HashMap<>();
-        obstaclesGraphics = new HashMap<>();
-        projectilesGraphics = new HashMap<>();
-
         for (String key : level.humanPlayers.keySet()) {
             Tank humanPlayer = level.humanPlayers.get(key);
             humanPlayersGraphics.put(

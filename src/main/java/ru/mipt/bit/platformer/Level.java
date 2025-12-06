@@ -27,7 +27,11 @@ import ru.mipt.bit.platformer.commands.ShootCommand;
 
 import ru.mipt.bit.platformer.keyboard.KeyboardListener;
 
+import org.springframework.stereotype.Component;
+import org.springframework.context.annotation.Scope;
 
+@Component
+@Scope("prototype")
 public class Level extends GameObject implements Observable {
     public TiledMapTileLayer groundLayer;
     public TiledMap level;
@@ -48,7 +52,7 @@ public class Level extends GameObject implements Observable {
     private HashMap<String, LevelData> dataUpdate;
 
 
-    public Level() {
+    public Level(GameProperties gameProps) {
         humanPlayers = new HashMap<>();
         aiPlayers = new HashMap<>();
         obstacles = new HashMap<>();

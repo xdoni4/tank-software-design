@@ -1,0 +1,11 @@
+package ru.mipt.bit.platformer;
+
+
+public abstract class ShootableEntity extends MovableEntity implements Shootable {
+    public float damage = 10;
+    public boolean pointBlanc = false;
+
+    ShootableEntity(int xCooordinate, int yCoordinate, float movementSpeed) {
+        super(xCooordinate, yCoordinate, movementSpeed);
+    }
+}

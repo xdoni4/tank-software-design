@@ -1,9 +1,10 @@
-package ru.mipt.bit.platformer.classes;
+package ru.mipt.bit.platformer.commands;
+import ru.mipt.bit.platformer.commands.Command;
+
 
 import java.util.ArrayList;
 import com.badlogic.gdx.math.GridPoint2;
 
-import ru.mipt.bit.platformer.classes.Command;
 import ru.mipt.bit.platformer.classes.Direction;
 import ru.mipt.bit.platformer.classes.Positionable;
 import ru.mipt.bit.platformer.classes.MovableEntity;
@@ -11,9 +12,9 @@ import ru.mipt.bit.platformer.classes.MovableEntity;
 
 public class MoveCommand implements Command {
     private MovableEntity movableEntity;
-    private Direction direction;
+    public Direction direction;
     private ArrayList<GridPoint2> obstacleCoordinates;
-    private ArrayList<Integer> idxsToSkip;
+    public ArrayList<Integer> idxsToSkip;
 
     public MoveCommand(
         MovableEntity movableEntity,
@@ -50,14 +51,19 @@ public class MoveCommand implements Command {
 
     @Override
     public void execute() {
-        if (!collidesWithObstacles()) {
-            movableEntity.destinationCoordinates.add(direction.getDirectionVector());
+        if (movableEntity.isMoving) {
+            // movableEntity.updateDirection(direction);
+            // if (direction != Direction.IDLE) {
+            movableEntity.rotation = direction.getRotation();
+            // }
+            if (!collidesWithObstacles()) {
+                movableEntity.destinationCoordinates.add(direction.getDirectionVector());
+            }
+            else {
+                movableEntity.on_collision_do();
+            }
             movableEntity.movementProgress = 0f;
             movableEntity.updateDirection(direction);
-
-            if (direction != Direction.IDLE) {
-                movableEntity.rotation = direction.getRotation();
-            }
         }
     }
 }
